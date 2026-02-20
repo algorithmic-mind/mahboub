@@ -1,4 +1,8 @@
-asgiref=3.11.1
-Django=6.0.2
-pip=23.2.1
-sqlparse=0.5.5
+asgiref
+Django
+pip
+sqlparse
+gunicorn
+psycopg2-binary
+python-dotenv
+whitenoise

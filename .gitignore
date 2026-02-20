@@ -82,8 +82,7 @@ coverage.xml
 *.mo
 
 # Django stuff: (static and media)
-static/
-media/
+
 
 # Sphinx documentation
 docs/_build/

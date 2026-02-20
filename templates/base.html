@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f65b5b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}سامانه جامع محبوب{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+    
+    {% load static %}
+    <script src="{% static 'js/theme-manager.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-right">
+                <button class="menu-toggle" id="menuToggle" type="button" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="search-toggle" id="searchToggle" type="button" aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <a href="{% url 'main:main' %}" class="app-logo">
+                <span class="app-logo-text">سامانه جامع محبوب</span>
+            </a>
+            
+            <div class="header-left">
+                <a href="" class="profile-toggle" id="profileToggle" aria-label="Profile">
+                    <i class="fas fa-user"></i>
+                </a>
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Drawer Menu -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer-menu" id="drawerMenu">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <i class="fas fa-heart"></i>
+                منوی اصلی
+            </div>
+            <button class="drawer-close" id="drawerClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <a href="{% url 'main:main' %}" class="drawer-menu-item">
+                <i class="fas fa-home"></i>
+                <span>صفحه اصلی</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-book"></i>
+                <span>کتابخانه محبوب</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-microphone"></i>
+                <span>صوت محبوب</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-video"></i>
+                <span>نگاره محبوب</span>
+            </a>
+            <div class="drawer-divider"></div>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-robot"></i>
+                <span>هوش مصنوعی</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-book-quran"></i>
+                <span>استخاره آنلاین</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-hands-praying"></i>
+                <span>دعا و زیارت</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-mosque"></i>
+                <span>اوقات شرعی</span>
+            </a>
+            <div class="drawer-divider"></div>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-user"></i>
+                <span>پروفایل کاربری</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-cog"></i>
+                <span>تنظیمات</span>
+            </a>
+            <a href="" class="drawer-menu-item">
+                <i class="fas fa-question-circle"></i>
+                <span>راهنما و پشتیبانی</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-backdrop" id="searchBackdrop"></div>
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <h3 class="search-modal-title">
+                    <i class="fas fa-search"></i> جستجوی محتوا
+                </h3>
+                <button class="search-modal-close" id="searchClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-modal-body">
+                <div class="search-input-container">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="searchInput"
+                        placeholder="کتاب، دوره، پادکست یا..."
+                        autocomplete="off"
+                    >
+                    <button class="search-input-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="search-suggestions">
+                    <div class="search-suggestion-title">
+                        <i class="fas fa-lightbulb"></i> جستجوهای محبوب
+                    </div>
+                    <div class="search-suggestion-tags">
+                        <a href="#" class="search-tag">تفسیر قرآن</a>
+                        <a href="#" class="search-tag">احادیث اهل بیت</a>
+                        <a href="#" class="search-tag">دوره فقه</a>
+                        <a href="#" class="search-tag">پادکست اخلاقی</a>
+                        <a href="#" class="search-tag">ادعیه ماه رمضان</a>
+                        <a href="#" class="search-tag">سیره پیامبر</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Welcome Popup -->
+    <div class="ai-welcome-modal" id="aiWelcomeModal" style="display: {% block ai_welcome_display %}{% endblock %};">
+        <div class="ai-welcome-backdrop" id="aiWelcomeBackdrop"></div>
+        <div class="ai-welcome-content">
+            <button class="ai-welcome-close" id="aiWelcomeClose">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="ai-welcome-image">
+                <img src="{% static 'imgs/ai-popup.png' %}" alt="AI Assistant" />
+            </div>
+            
+            <div class="ai-welcome-body">
+                <h2 class="ai-welcome-title">
+                    هوش مصنوعی محبوب
+                </h2>
+                <p class="ai-welcome-description">
+                    دستیار هوشمند شما برای پاسخ به سوالات دینی، تفسیر قرآن و مسائل شرعی
+                </p>
+                
+                <div class="ai-welcome-actions">
+                    <a href="" class="btn-ai-start">
+                        <i class="fas fa-comments"></i>
+                        شروع گفتگو
+                    </a>
+                    <button class="btn-ai-later" id="aiWelcomeLater" style="font-family: 'Vazirmatn';">
+                        بعداً
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="app-content">
+        <div class="fade-in">
+            {% block content %}
+            <!-- محتوای صفحه اینجا قرار می‌گیرد -->
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-content">
+            <a href="{% url 'main:main' %}" class="nav-item {% if active_menu == 'home' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>خانه</span>
+            </a>
+            <a href="" class="nav-item {% if active_menu == 'books' %}active{% endif %}">
+                <i class="fas fa-book"></i>
+                <span>کتاب‌ها</span>
+            </a>
+            <a href="" class="nav-item {% if active_menu == 'courses' %}active{% endif %}">
+                <i class="fas fa-video"></i>
+                <span>نگاره</span>
+            </a>
+            <a href="" class="nav-item {% if active_menu == 'podcasts' %}active{% endif %}">
+                <i class="fas fa-microphone"></i>
+                <span>صوت</span>
+            </a>
+            <a href="" class="nav-item {% if active_menu == 'profile' %}active{% endif %}">
+                <i class="fas fa-user"></i>
+                <span>پروفایل</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    
+</body>
+</html>

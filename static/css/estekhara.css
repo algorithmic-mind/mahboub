@@ -1,0 +1,450 @@
+/* Estekhara Page Styles */
+
+.back-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid var(--gray-300);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+/* Content */
+.estekhara-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 80px 16px 100px;
+    min-height: 100vh;
+}
+
+/* Steps */
+.estekhara-step {
+    display: none;
+    animation: fadeInScale 0.5s ease;
+}
+
+.estekhara-step.active {
+    display: block;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.step-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-xl);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.step-icon i {
+    font-size: 48px;
+    color: white;
+}
+
+.step-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.step-description {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: justify;
+    margin-bottom: 24px;
+}
+
+/* Info Box */
+.info-box {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--primary);
+    display: flex;
+    gap: 16px;
+}
+
+.info-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-icon i {
+    font-size: 24px;
+    color: white;
+}
+
+.info-content h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.info-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+.info-content li {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding-right: 20px;
+    position: relative;
+}
+
+.info-content li:before {
+    content: "✓";
+    position: absolute;
+    right: 0;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Input Group */
+.input-group {
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.question-input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-family: 'Vazirmatn';
+    color: var(--text-primary);
+    background: var(--card-bg);
+    resize: vertical;
+    transition: all 0.3s;
+    line-height: 1.6;
+}
+
+.question-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(246, 91, 91, 0.1);
+}
+
+/* Dua Box */
+.dua-box {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.dua-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.dua-header i {
+    font-size: 20px;
+}
+
+.dua-text {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.dua-translation {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Quran Container */
+.quran-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
+
+.quran-book {
+    perspective: 1000px;
+    margin-bottom: 30px;
+}
+
+.quran-cover {
+    width: 200px;
+    height: 280px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    animation: bookOpen 2s ease-in-out;
+}
+
+@keyframes bookOpen {
+    0% {
+        transform: rotateY(0deg);
+    }
+    50% {
+        transform: rotateY(-90deg);
+    }
+    100% {
+        transform: rotateY(-180deg);
+    }
+}
+
+.quran-cover i {
+    font-size: 80px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.quran-cover p {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+}
+
+.opening-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Result */
+.result-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.result-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.5s ease;
+}
+
+.result-icon.negative {
+    background: linear-gradient(135deg, #ff9800, #ef6c00);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.result-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.result-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Ayah Box */
+.ayah-box {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--primary);
+}
+
+.ayah-number {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid var(--gray-200);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.ayah-text {
+    font-size: 20px;
+    line-height: 1.9;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.ayah-translation {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Interpretation Box */
+.interpretation-box {
+    background: linear-gradient(135deg, rgba(246, 91, 91, 0.05), rgba(246, 91, 91, 0.1));
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 2px solid rgba(246, 91, 91, 0.2);
+}
+
+.interpretation-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.interpretation-title i {
+    font-size: 20px;
+}
+
+.interpretation-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    text-align: justify;
+}
+
+/* Result Actions */
+.result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.result-actions .btn {
+    padding: 12px 20px;
+}
+
+/* Button Large */
+.btn-large {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .step-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .step-icon i {
+        font-size: 40px;
+    }
+
+    .step-title {
+        font-size: 20px;
+    }
+
+    .quran-cover {
+        width: 180px;
+        height: 250px;
+    }
+
+    .quran-cover i {
+        font-size: 64px;
+    }
+
+    .quran-cover p {
+        font-size: 20px;
+    }
+
+    .ayah-text {
+        font-size: 18px;
+    }
+}
