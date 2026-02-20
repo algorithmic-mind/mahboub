@@ -8,14 +8,14 @@
                 {% if cat.icon %}<i class="{{ cat.icon }}"></i>{% endif %}
                 {{ cat.name }}
             </div>
-            <a href="{% url 'book:books_by_category' cat.slug %}" class="view-all">
+            <a href="{% url 'books:books_by_category' cat.slug %}" class="view-all">
                 مشاهده همه
                 <i class="fas fa-chevron-left"></i>
             </a>
         </div>
         <div class="books-scroll">
             {% for book in books %}
-            <a href="{% url 'book:book_detail' book.slug %}" class="book-card">
+            <a href="{% url 'books:book_detail' book.slug %}" class="book-card">
                 <div class="book-cover">
                     {% if book.cover_image %}
                     <div class="book-image" style="background:#f5f5f5;">
@@ -24,7 +24,7 @@
                              style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
                     </div>
                     {% else %}
-                    <div class="book-image" style="background: {{ book|book_gradient }};">
+                    <div class="book-image" >
                         <i class="fas fa-book-open"></i>
                     </div>
                     {% endif %}
@@ -74,7 +74,7 @@
     <section class="book-category">
         <div class="books-scroll">
             {% for book in flat_books %}
-            <a href="{% url 'book:book_detail' book.slug %}" class="book-card">
+            <a href="{% url 'books:book_detail' book.slug %}" class="book-card">
                 <div class="book-cover">
                     {% if book.cover_image %}
                     <div class="book-image" style="background:#f5f5f5;">
@@ -131,7 +131,7 @@
     <div class="pagination-bar" style="display:flex;justify-content:center;gap:8px;padding:16px 0;">
         {% if flat_books.has_previous %}
         <button class="btn btn-sm"
-                hx-get="{% url 'book:books_partial' %}?page={{ flat_books.previous_page_number }}"
+                hx-get="{% url 'books:books_partial' %}?page={{ flat_books.previous_page_number }}"
                 hx-target="#books-container"
                 hx-include="#filter-form">
             <i class="fas fa-chevron-right"></i>
@@ -144,7 +144,7 @@
 
         {% if flat_books.has_next %}
         <button class="btn btn-sm"
-                hx-get="{% url 'book:books_partial' %}?page={{ flat_books.next_page_number }}"
+                hx-get="{% url 'books:books_partial' %}?page={{ flat_books.next_page_number }}"
                 hx-target="#books-container"
                 hx-include="#filter-form">
             <i class="fas fa-chevron-left"></i>
