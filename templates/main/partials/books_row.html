@@ -1,0 +1,24 @@
+<!-- main/partials/books_row.html -->
+{% if featured_books %}
+    {% for book in featured_books %}
+    <a href="{% url 'books:book_detail' book.slug %}" class="book-item">
+        <img src="{{ book.cover_image.url|default:'/static/imgs/default-book.jpg' }}" alt="{{ book.title }}" class="book-cover">
+        <div class="book-info">
+            <div class="book-title">{{ book.title|truncatechars:30 }}</div>
+            <div class="book-author">{{ book.author|truncatechars:20 }}</div>
+            <div class="book-rating">
+                <i class="fas fa-star"></i> {{ book.rating }}
+            </div>
+            {% if book.access_type == 'free' %}
+            <div class="book-price">رایگان</div>
+            {% elif book.discount_percent > 0 %}
+            <div class="book-price">{{ book.final_price }} تومان <span class="discount">{{ book.price }} تومان</span></div>
+            {% else %}
+            <div class="book-price">{{ book.price }} تومان</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <p style="text-align: center; width: 100%; color: var(--text-secondary);">هیچ کتاب پیشنهادی موجود نیست.</p>
+{% endif %}

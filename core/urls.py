@@ -26,6 +26,7 @@ admin.site.index_title = "خوش آمدید به پنل مدیریت"
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
+    path('books/', include('book.urls')),
 ]
 
 if settings.DEBUG:

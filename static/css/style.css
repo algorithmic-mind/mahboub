@@ -1705,3 +1705,7 @@ body {
         font-size: 13px;
     }
 }
+.quran-verse-card{
+    background-color: #fb6567;
+    color: white;
+}

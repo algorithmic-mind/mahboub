@@ -1,0 +1,26 @@
+<!-- main/partials/courses_row.html -->
+{% load static %}
+{% if featured_courses %}
+    {% for course in featured_courses %}
+    <a href="{% url 'courses:course_detail' course.slug %}" class="course-item">
+        <img src="{{ course.cover_image.url|default:'/static/imgs/default-course.jpg' }}" alt="{{ course.title }}" class="course-cover">
+        <div class="course-info">
+            <div class="course-title">{{ course.title|truncatechars:30 }}</div>
+            <div class="course-instructor">{{ course.instructor|truncatechars:20 }}</div>
+            <div class="course-duration">{{ course.duration_display }}</div>
+            <div class="course-rating">
+                <i class="fas fa-star"></i> {{ course.rating }}
+            </div>
+            {% if course.access_type == 'free' %}
+            <div class="course-price">رایگان</div>
+            {% elif course.discount_percent > 0 %}
+            <div class="course-price">{{ course.final_price }} تومان <span class="discount">{{ course.price }} تومان</span></div>
+            {% else %}
+            <div class="course-price">{{ course.price }} تومان</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <p>هیچ نگاره پیشنهادی موجود نیست.</p>
+{% endif %}

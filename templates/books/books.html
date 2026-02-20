@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}کتابخانه محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/books.css' %}">
+{# HTMX 2 #}
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-book"></i>
+            کتابخانه محبوب
+        </h1>
+        <p class="page-subtitle">مجموعه کامل کتاب‌های مذهبی و معارف اسلامی</p>
+    </div>
+
+    <!-- فیلتر و جستجو -->
+    <div class="books-filter-bar">
+
+        {# ── جستجو با debounce ── #}
+        <div class="search-input-container" style="margin-bottom:12px;">
+            <input
+                type="text"
+                name="q"
+                class="search-input"
+                placeholder="جستجوی کتاب، نویسنده..."
+                autocomplete="off"
+                hx-get="{% url 'book:books_partial' %}"
+                hx-trigger="keyup changed delay:400ms"
+                hx-target="#books-container"
+                hx-include="#filter-form"
+                hx-indicator="#search-spinner"
+            >
+            <span id="search-spinner" class="htmx-indicator" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);">
+                <i class="fas fa-spinner fa-spin" style="color:var(--primary);"></i>
+            </span>
+        </div>
+
+        {# ── فرم فیلتر (category + access_type + sort) ── #}
+        <form id="filter-form" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+
+            {# دسته‌بندی #}
+            <select
+                name="cat"
+                class="filter-select"
+                hx-get="{% url 'book:books_partial' %}"
+                hx-trigger="change"
+                hx-target="#books-container"
+                hx-include="#filter-form"
+            >
+                <option value="">همه دسته‌ها</option>
+                {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if selected_cat == cat.slug %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            {# نوع دسترسی #}
+            <select
+                name="access"
+                class="filter-select"
+                hx-get="{% url 'book:books_partial' %}"
+                hx-trigger="change"
+                hx-target="#books-container"
+                hx-include="#filter-form"
+            >
+                <option value="">همه</option>
+                <option value="free"    {% if selected_access == 'free'    %}selected{% endif %}>رایگان</option>
+                <option value="paid"    {% if selected_access == 'paid'    %}selected{% endif %}>پولی</option>
+                <option value="premium" {% if selected_access == 'premium' %}selected{% endif %}>ویژه اعضا</option>
+            </select>
+
+            {# مرتب‌سازی #}
+            <select
+                name="sort"
+                class="filter-select"
+                hx-get="{% url 'book:books_partial' %}"
+                hx-trigger="change"
+                hx-target="#books-container"
+                hx-include="#filter-form"
+            >
+                <option value="-created_at" {% if selected_sort == '-created_at' %}selected{% endif %}>جدیدترین</option>
+                <option value="-views"      {% if selected_sort == '-views'      %}selected{% endif %}>پربازدیدترین</option>
+                <option value="-rating"     {% if selected_sort == '-rating'     %}selected{% endif %}>بهترین امتیاز</option>
+                <option value="price"       {% if selected_sort == 'price'       %}selected{% endif %}>ارزان‌ترین</option>
+                <option value="-price"      {% if selected_sort == '-price'      %}selected{% endif %}>گران‌ترین</option>
+            </select>
+
+        </form>
+    </div>
+
+    {# ── ظرف اصلی نتایج — HTMX این div را جایگزین می‌کند ── #}
+    <div id="books-container">
+        {% include 'book/partials/books_list.html' %}
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/books.js' %}"></script>
+{% endblock %}

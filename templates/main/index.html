@@ -1,703 +1,387 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}سامانه جامع محبوب{% endblock %}
+{% block title %}{{ site_settings.site_name|default:"سامانه جامع محبوب" }}{% endblock %}
 
 {% block extra_css %}
+<!-- Add htmx library -->
+<script src="https://unpkg.com/htmx.org@2.0.0-beta3/dist/htmx.js"></script>
 
 {% endblock %}
 
 {% block content %}
- <div class="fade-in">
-            <!-- Simple Image Slider -->
-            <div class="simple-slider" id="imageSlider">
-                <div class="slider-container">
-                    <a href="#" class="slider-slide active">
-                        <img src="imgs/1.jpg" alt="کتاب قرآن کریم" class="slider-image">
-                    </a>
-                    <a href="#" class="slider-slide">
-                        <img src="imgs/1.jpg" alt="کتابخانه اسلامی" class="slider-image">
-                    </a>
-                    <a href="#" class="slider-slide">
-                        <img src="imgs/1.jpg" alt="کتاب احادیث" class="slider-image">
-                    </a>
-                </div>
-                
-                <div class="slider-dots">
-                    <button class="slider-dot active" data-slide="0"></button>
-                    <button class="slider-dot" data-slide="1"></button>
-                    <button class="slider-dot" data-slide="2"></button>
-                </div>
-                
-                <button class="slider-arrow slider-prev">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-                <button class="slider-arrow slider-next">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
-
-            <!-- Categories Section - 8 items -->
-            <div class="section-title">دسترسی سریع</div>
-            <div class="categories-grid">
-                <a href="books.html" class="card category-item slide-up" style="animation-delay: 0ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-book"></i>
-                        <div class="category-title">کتابخانه</div>
-                        <div class="category-count">۱۸۵ کتاب</div>
-                    </div>
+<div class="fade-in">
+    <!-- Simple Image Slider (matching old.html) -->
+    <div class="simple-slider" id="imageSlider"
+         data-autoplay="{{ slider.auto_play|yesno:'true,false' }}"
+         data-interval="{{ slider.interval|default:4000 }}">
+        <div class="slider-container">
+            {% if slides %}
+                {% for slide in slides %}
+                <a href="{{ slide.link|default:'#' }}" class="slider-slide {% if forloop.first %}active{% endif %}">
+                    <img src="{{ slide.image.url }}" alt="{{ slide.title|default:'اسلاید' }}" class="slider-image">
                 </a>
-                <a href="podcasts.html" class="card category-item slide-up" style="animation-delay: 50ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-microphone"></i>
-                        <div class="category-title">صوت</div>
-                        <div class="category-count">۳۲۴ صوت</div>
-                    </div>
+                {% endfor %}
+            {% else %}
+                <a href="#" class="slider-slide active">
+                    <img src="{% static 'imgs/1.jpg' %}" alt="اسلاید" class="slider-image">
                 </a>
-                <a href="courses.html" class="card category-item slide-up" style="animation-delay: 100ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-video"></i>
-                        <div class="category-title">نگاره</div>
-                        <div class="category-count">۱۲۸ نگاره</div>
-                    </div>
-                </a>
-                <a href="ai.html" class="card category-item slide-up" style="animation-delay: 150ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-robot"></i>
-                        <div class="category-title">هوش مصنوعی</div>
-                        <div class="category-count">جدید</div>
-                    </div>
-                </a>
-                <a href="estekhara.html" class="card category-item slide-up" style="animation-delay: 200ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-book-quran"></i>
-                        <div class="category-title">استخاره</div>
-                        <div class="category-count">آنلاین</div>
-                    </div>
-                </a>
-                <a href="#" class="card category-item slide-up" style="animation-delay: 250ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-hands-praying"></i>
-                        <div class="category-title">دعا</div>
-                        <div class="category-count">۲۵۰ دعا</div>
-                    </div>
-                </a>
-                <a href="#" class="card category-item slide-up" style="animation-delay: 300ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-mosque"></i>
-                        <div class="category-title">اوقات شرعی</div>
-                        <div class="category-count">۵۰ شهر</div>
-                    </div>
-                </a>
-                <a href="#" class="card category-item slide-up" style="animation-delay: 350ms;">
-                    <div class="card-body" style="padding: 12px 6px;">
-                        <i class="fas fa-calendar-alt"></i>
-                        <div class="category-title">مناسبت‌ها</div>
-                        <div class="category-count">تقویم</div>
-                    </div>
-                </a>
-            </div>
-
-
-
-<!-- Books Section with Categories -->
-<div class="content-box">
-    <div class="section-header">
-        <div class="section-title">
-            <i class="fas fa-book"></i>
-            کتاب‌های پیشنهادی
+            {% endif %}
         </div>
-        <a href="books.html" class="view-all">
-            مشاهده همه
+
+        <div class="slider-dots">
+            {% if slides %}
+                {% for slide in slides %}
+                <button class="slider-dot {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+                {% endfor %}
+            {% else %}
+                <button class="slider-dot active" data-slide="0"></button>
+            {% endif %}
+        </div>
+
+        <button class="slider-arrow slider-prev">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <button class="slider-arrow slider-next">
             <i class="fas fa-chevron-left"></i>
+        </button>
+    </div>
+
+    <!-- Categories Section - 8 items (matching old.html) -->
+    <div class="section-title">دسترسی سریع</div>
+    <div class="categories-grid">
+        <a href="{% url 'books:books_list' %}" class="card category-item slide-up" style="animation-delay: 0ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-book"></i>
+                <div class="category-title">کتابخانه</div>
+                <div class="category-count">۱۸۵ کتاب</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 50ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-microphone"></i>
+                <div class="category-title">صوت</div>
+                <div class="category-count">۳۲۴ صوت</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 100ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-video"></i>
+                <div class="category-title">نگاره</div>
+                <div class="category-count">۱۲۸ نگاره</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 150ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-robot"></i>
+                <div class="category-title">هوش مصنوعی</div>
+                <div class="category-count">جدید</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 200ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-book-quran"></i>
+                <div class="category-title">استخاره</div>
+                <div class="category-count">آنلاین</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 250ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-hands-praying"></i>
+                <div class="category-title">دعا</div>
+                <div class="category-count">۲۵۰ دعا</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 300ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-mosque"></i>
+                <div class="category-title">اوقات شرعی</div>
+                <div class="category-count">۵۰ شهر</div>
+            </div>
+        </a>
+        <a href="#" class="card category-item slide-up" style="animation-delay: 350ms;">
+            <div class="card-body" style="padding: 12px 6px;">
+                <i class="fas fa-calendar-alt"></i>
+                <div class="category-title">مناسبت‌ها</div>
+                <div class="category-count">تقویم</div>
+            </div>
         </a>
     </div>
-    
-    <!-- Category Tabs inside box -->
-    <div class="category-tabs" id="categoryTabsIndex">
-        <button class="category-tab active" data-category="all">همه کتاب‌ها</button>
-        <button class="category-tab" data-category="quran">قرآن و تفسیر</button>
-        <button class="category-tab" data-category="hadith">حدیث و دعا</button>
-        <button class="category-tab" data-category="ethics">اخلاق و عرفان</button>
-        <button class="category-tab" data-category="history">تاریخ و سیره</button>
+
+    <!-- Books Section with Dynamic Tabs and Scrollable Row (matching old.html structure) -->
+    <div class="content-box">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-book"></i>
+                کتاب‌های پیشنهادی
+            </div>
+            <a href="{% url 'books:books_list' %}" class="view-all">
+                مشاهده همه
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        
+        <div class="category-tabs" id="categoryTabsIndex">
+            <button class="category-tab active" data-category="all"
+                    hx-get="{% url 'main:ajax_books' %}?category=all"
+                    hx-target="#booksRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">همه کتاب‌ها</button>
+            {% for category in book_categories %}
+            <button class="category-tab" data-category="{{ category.slug }}"
+                    hx-get="{% url 'main:ajax_books' %}?category={{ category.slug }}"
+                    hx-target="#booksRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">{{ category.name }}</button>
+            {% endfor %}
+        </div>
+
+        <div class="books-row" id="booksRowIndex">
+            {% if featured_books %}
+                {% for book in featured_books %}
+                <a href="{% url 'books:book_detail' book.slug %}" class="book-item">
+                    <img src="{{ book.cover_image.url|default:'/static/imgs/default-book.jpg' }}" alt="{{ book.title }}" class="book-cover">
+                    <div class="book-info">
+                        <div class="book-title">{{ book.title|truncatechars:30 }}</div>
+                        <div class="book-author">{{ book.author|truncatechars:20 }}</div>
+                        <div class="book-rating">
+                            <i class="fas fa-star"></i> {{ book.rating }}
+                        </div>
+                        {% if book.access_type == 'free' %}
+                        <div class="book-price">رایگان</div>
+                        {% elif book.discount_percent > 0 %}
+                        <div class="book-price">{{ book.final_price }} تومان <span class="discount">{{ book.price }} تومان</span></div>
+                        {% else %}
+                        <div class="book-price">{{ book.price }} تومان</div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; width: 100%; color: var(--text-secondary);">هیچ کتاب پیشنهادی موجود نیست.</p>
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Books Rows for each category -->
-    <div class="books-categories-container">
-        <!-- All Books Row -->
-        <div class="category-books-row" data-category="all">
-            <div class="horizontal-scroll">
-                <a href="books.html" class="card book-card" data-category="hadith" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-open" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">نهج البلاغه</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">امام علی (ع)</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۴۵۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" data-category="quran" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #ff9800, #f57c00); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-quran" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر المیزان</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">علامه طباطبایی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۲۰ جلد</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" data-category="hadith" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #2196f3, #1565c0); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-reader" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">مفاتیح الجنان</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">شیخ عباس قمی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۶۰۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" data-category="ethics" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #9c27b0, #6a1b9a); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">چهل حدیث</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">امام خمینی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۴۰۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" data-category="history" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #f44336, #d32f2f); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-landmark" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تاریخ اسلام</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد جعفری</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۳ جلد</span>
-                        </div>
-                    </div>
-                </a>
+    <!-- Podcasts Section matching old.html -->
+    <div class="content-box">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-microphone"></i>
+                صوت‌های پیشنهادی
             </div>
+            <a href="#" class="view-all">
+                مشاهده همه
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        
+        <div class="category-tabs" id="podcastTabsIndex">
+            <button class="category-tab active" data-category="all"
+                    hx-get="{% url 'main:ajax_podcasts' %}?category=all"
+                    hx-target="#podcastsRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">همه صوت‌ها</button>
+            {% for category in podcast_categories %}
+            <button class="category-tab" data-category="{{ category.slug }}"
+                    hx-get="{% url 'main:ajax_podcasts' %}?category={{ category.slug }}"
+                    hx-target="#podcastsRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">{{ category.name }}</button>
+            {% endfor %}
         </div>
 
-        <!-- Quran Row -->
-        <div class="category-books-row" data-category="quran" style="display: none;">
-            <div class="horizontal-scroll">
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #ff9800, #f57c00); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-quran" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر المیزان</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">علامه طباطبایی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۲۰ جلد</span>
-                            
+        <div class="podcasts-row" id="podcastsRowIndex">
+            {% if featured_podcasts %}
+                {% for podcast in featured_podcasts %}
+                <a href="{% url 'podcasts:podcast_detail' podcast.slug %}" class="podcast-item">
+                    <img src="{{ podcast.cover_image.url|default:'/static/imgs/default-podcast.jpg' }}" alt="{{ podcast.title }}" class="podcast-cover">
+                    <div class="podcast-info">
+                        <div class="podcast-title">{{ podcast.title|truncatechars:30 }}</div>
+                        <div class="podcast-host">{{ podcast.host|truncatechars:20 }}</div>
+                        <div class="podcast-duration">{{ podcast.duration_display }}</div>
+                        <div class="podcast-rating">
+                            <i class="fas fa-star"></i> {{ podcast.rating }}
                         </div>
+                        {% if podcast.access_type == 'free' %}
+                        <div class="podcast-price">رایگان</div>
+                        {% elif podcast.discount_percent > 0 %}
+                        <div class="podcast-price">{{ podcast.final_price }} تومان <span class="discount">{{ podcast.price }} تومان</span></div>
+                        {% else %}
+                        <div class="podcast-price">{{ podcast.price }} تومان</div>
+                        {% endif %}
                     </div>
                 </a>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; width: 100%; color: var(--text-secondary);">هیچ صوت پیشنهادی موجود نیست.</p>
+            {% endif %}
+        </div>
+    </div>
 
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #00bcd4, #00838f); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-quran" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر نور</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">قرائتی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۱۰ جلد</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-open" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر نمونه</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">آیت‌الله مکارم</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);;">۲۷ جلد</span>
-                        </div>
-                    </div>
-                </a>
+    <!-- Courses Section matching old.html -->
+    <div class="content-box">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fas fa-video"></i>
+                نگاره‌های پیشنهادی
             </div>
+            <a href="" class="view-all">
+                مشاهده همه
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        
+        <div class="category-tabs" id="courseTabsIndex">
+            <button class="category-tab active" data-category="all"
+                    hx-get="{% url 'main:ajax_courses' %}?category=all"
+                    hx-target="#coursesRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">همه نگاره‌ها</button>
+            {% for category in course_categories %}
+            <button class="category-tab" data-category="{{ category.slug }}"
+                    hx-get="{% url 'main:ajax_courses' %}?category={{ category.slug }}"
+                    hx-target="#coursesRowIndex"
+                    hx-swap="innerHTML"
+                    onclick="setActiveTab(this)">{{ category.name }}</button>
+            {% endfor %}
         </div>
 
-        <!-- Hadith Row -->
-        <div class="category-books-row" data-category="hadith" style="display: none;">
-            <div class="horizontal-scroll">
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-open" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">نهج البلاغه</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">امام علی (ع)</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۴۵۰ صفحه</span>
+        <div class="courses-row" id="coursesRowIndex">
+            {% if featured_courses %}
+                {% for course in featured_courses %}
+                <a href="{% url 'courses:course_detail' course.slug %}" class="course-item">
+                    <img src="{{ course.cover_image.url|default:'/static/imgs/default-course.jpg' }}" alt="{{ course.title }}" class="course-cover">
+                    <div class="course-info">
+                        <div class="course-title">{{ course.title|truncatechars:30 }}</div>
+                        <div class="course-instructor">{{ course.instructor|truncatechars:20 }}</div>
+                        <div class="course-duration">{{ course.duration_display }}</div>
+                        <div class="course-rating">
+                            <i class="fas fa-star"></i> {{ course.rating }}
                         </div>
+                        {% if course.access_type == 'free' %}
+                        <div class="course-price">رایگان</div>
+                        {% elif course.discount_percent > 0 %}
+                        <div class="course-price">{{ course.final_price }} تومان <span class="discount">{{ course.price }} تومان</span></div>
+                        {% else %}
+                        <div class="course-price">{{ course.price }} تومان</div>
+                        {% endif %}
                     </div>
                 </a>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; width: 100%; color: var(--text-secondary);">هیچ نگاره پیشنهادی موجود نیست.</p>
+            {% endif %}
+        </div>
+    </div>
 
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #2196f3, #1565c0); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-reader" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">مفاتیح الجنان</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">شیخ عباس قمی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۶۰۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
+    <!-- Banners Section (Dynamic) -->
+    {% if banners %}
+    <div class="banners-section">
+        {% for banner in banners %}
+        <a href="{{ banner.link|default:'#' }}" class="banner-item">
+            <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="banner-image">
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #9c27b0, #6a1b9a); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">صحیفه سجادیه</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">امام سجاد (ع)</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۳۰۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
+    <!-- آیه روز (matching old.html) -->
+    <div class="section-title">
+        <i class="fas fa-quran"></i>
+        آیه روز
+    </div>
+    <div class="card quran-verse-card">
+        <div class="card-body">
+            <div style="font-size: 16px; font-weight: 600; text-align: justify;">
+                "مَنْ عَمِلَ صَالِحًا فَلِنَفْسِهِ ۖ وَمَنْ أَسَاءَ فَعَلَيْهَا"
+            </div>
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 10px;">
+                هر کس کار شایسته‌‌ای کند، به سود خود اوست و هر کس بدی کند، به زیان خود اوست
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                <span>سوره فصلت - آیه ۴۶</span>
+                <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white;">
+                    <i class="fas fa-share-alt"></i> اشتراک
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Ethics Row -->
-        <div class="category-books-row" data-category="ethics" style="display: none;">
-            <div class="horizontal-scroll">
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #9c27b0, #6a1b9a); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+    <!-- نماد ها و مجوز ها (matching old.html) -->
+    <div class="section-title">
+        <i class="fas fa-shield-alt"></i>
+        نماد ها و مجوز ها
+    </div>
+    <div class="card" style="margin-bottom: 16px;">
+        <div class="card-body" style="padding: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-shield-alt" style="font-size: 24px; color: white;"></i>
                     </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">چهل حدیث</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">امام خمینی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۴۰۰ صفحه</span>
-                        </div>
-                    </div>
-                </a>
+                    <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">نماد اعتماد الکترونیکی</div>
+                    <div style="font-size: 9px; color: var(--text-secondary);">دارای مجوز رسمی</div>
+                </div>
 
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-heart" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+                <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #2196f3, #1565c0); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-certificate" style="font-size: 24px; color: white;"></i>
                     </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">معراج السعاده</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">ملا احمد نراقی</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);;">۷۰۰ صفحه</span>
-                        </div>
+                    <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">ساماندهی کسب‌وکار</div>
+                    <div style="font-size: 9px; color: var(--text-secondary);">ثبت شده در سامانه</div>
+                </div>
+
+                <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #ff9800, #ef6c00); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-credit-card" style="font-size: 24px; color: white;"></i>
                     </div>
-                </a>
+                    <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">پرداخت امن</div>
+                    <div style="font-size: 9px; color: var(--text-secondary);">درگاه معتبر بانکی</div>
+                </div>
+
+                <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                    <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #9c27b0, #6a1b9a); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book-reader" style="font-size: 24px; color: white;"></i>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">مجوز نشر دیجیتال</div>
+                    <div style="font-size: 9px; color: var(--text-secondary);">وزارت فرهنگ و ارشاد</div>
+                </div>
             </div>
-        </div>
-
-        <!-- History Row -->
-        <div class="category-books-row" data-category="history" style="display: none;">
-            <div class="horizontal-scroll">
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #f44336, #d32f2f); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-landmark" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تاریخ اسلام</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد جعفری</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);">۳ جلد</span>
-                            
-                        </div>
-                    </div>
-                </a>
-
-                <a href="books.html" class="card book-card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                    <div style="height: 170px; background: linear-gradient(135deg, #ff9800, #f57c00); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-history" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
-                    </div>
-                    <div class="card-body" style="padding: 10px;">
-                        <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تاریخ تشیع</div>
-                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">رسول جعفریان</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 9px; color: var(--text-secondary);;">۲ جلد</span>
-                            
-                        </div>
-                    </div>
-                </a>
+            
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); text-align: center;">
+                <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                    تمامی محتوای این سایت دارای مجوز های لازم بوده و استفاده از آن با رعایت قوانین کپی رایت مجاز می باشد.
+                </p>
             </div>
         </div>
     </div>
 </div>
-
-            <!-- Podcasts Section -->
-            <div class="content-box">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-microphone"></i>
-                        صوت‌های محبوب
-                    </div>
-                    <a href="podcasts.html" class="view-all">
-                        مشاهده همه
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </div>
-                
-                <!-- Category Tabs for Podcasts -->
-                <div class="category-tabs" id="categoryTabsPodcasts">
-                    <button class="category-tab active" data-category="all">همه صوت‌ها</button>
-                    <button class="category-tab" data-category="ethics">اخلاق</button>
-                    <button class="category-tab" data-category="tafsir">تفسیر</button>
-                    <button class="category-tab" data-category="dua">دعا و احکام</button>
-                </div>
-
-                <!-- Podcasts Categories Container -->
-                <div class="podcasts-categories-container">
-                    <!-- All Podcasts -->
-                    <div class="category-podcasts-row" data-category="all">
-                        <div class="horizontal-scroll">
-                            <a href="podcasts.html" class="card" data-category="ethics" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #f44336, #d32f2f); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-podcast" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">درس اخلاق</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد پناهیان</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۴۵ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="podcasts.html" class="card" data-category="tafsir" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #3f51b5, #283593); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-microphone-alt" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر سوره</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد قرائتی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۳۵ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="podcasts.html" class="card" data-category="dua" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #00bcd4, #0097a7); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-headphones" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">شرح دعا</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد رفیعی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۲۸ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="podcasts.html" class="card" data-category="dua" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #673ab7, #512da8); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-volume-up" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">احکام عملی</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد محمدی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۵۰ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Ethics Podcasts -->
-                    <div class="category-podcasts-row" data-category="ethics" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="podcasts.html" class="card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #f44336, #d32f2f); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-podcast" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">درس اخلاق</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد پناهیان</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۴۵ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Tafsir Podcasts -->
-                    <div class="category-podcasts-row" data-category="tafsir" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="podcasts.html" class="card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #3f51b5, #283593); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-microphone-alt" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر سوره</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد قرائتی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۳۵ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Dua Podcasts -->
-                    <div class="category-podcasts-row" data-category="dua" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="podcasts.html" class="card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #00bcd4, #0097a7); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-headphones" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">شرح دعا</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد رفیعی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۲۸ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="podcasts.html" class="card" style="text-decoration: none; color: inherit; min-width: 140px;">
-                                <div style="height: 120px; background: linear-gradient(135deg, #673ab7, #512da8); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-volume-up" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">احکام عملی</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">استاد محمدی</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">۵۰ دقیقه</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video Courses Section -->
-            <div class="content-box">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-video"></i>
-                        نگاره های محبوب
-                    </div>
-                    <a href="courses.html" class="view-all">
-                        مشاهده همه
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </div>
-
-                <!-- Category Tabs for Videos -->
-                <div class="category-tabs" id="categoryTabsVideos">
-                    <button class="category-tab active" data-category="all">همه دوره‌ها</button>
-                    <button class="category-tab" data-category="quran">قرآن و تجوید</button>
-                    <button class="category-tab" data-category="fiqh">فقه</button>
-                    <button class="category-tab" data-category="tafsir">تفسیر</button>
-                </div>
-
-                <!-- Videos Categories Container -->
-                <div class="videos-categories-container">
-                    <!-- All Videos -->
-                    <div class="category-videos-row" data-category="all">
-                        <div class="horizontal-scroll">
-                            <a href="courses.html" class="card" data-category="quran" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #ff4081, #f50057); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-play-circle" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">آموزش تجوید قرآن</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۱۲ درس · ۸ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد حسینی</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="courses.html" class="card" data-category="fiqh" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #00bcd4, #0097a7); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-graduation-cap" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">دوره فقه مبتدی</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۲۰ درس · ۱۵ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد کریمی</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="courses.html" class="card" data-category="tafsir" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-book-open" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر سوره مبارکه</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۸ درس · ۶ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد احمدی</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Quran Videos -->
-                    <div class="category-videos-row" data-category="quran" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="courses.html" class="card" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #ff4081, #f50057); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-play-circle" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">آموزش تجوید قرآن</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۱۲ درس · ۸ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد حسینی</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Fiqh Videos -->
-                    <div class="category-videos-row" data-category="fiqh" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="courses.html" class="card" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #00bcd4, #0097a7); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-graduation-cap" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">دوره فقه مبتدی</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۲۰ درس · ۱۵ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد کریمی</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Tafsir Videos -->
-                    <div class="category-videos-row" data-category="tafsir" style="display: none;">
-                        <div class="horizontal-scroll">
-                            <a href="courses.html" class="card" style="text-decoration: none; color: inherit; min-width: 160px;">
-                                <div style="height: 90px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: var(--radius) var(--radius) 0 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-book-open" style="font-size: 32px; color: rgba(255,255,255,0.9);"></i>
-                                </div>
-                                <div class="card-body" style="padding: 10px;">
-                                    <div style="font-weight: 700; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">تفسیر سوره مبارکه</div>
-                                    <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 6px;">۸ درس · ۶ ساعت</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 9px; color: var(--text-secondary);">استاد احمدی</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Daily Quote -->
-            <div class="section-title">
-                <i class="fas fa-quote-right"></i>
-                حدیث روز
-            </div>
-            <div class="card" style="background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: white; margin-bottom: 16px;">
-                <div class="card-body" style="padding: 16px;">
-                    <div style="font-size: 13px; line-height: 1.8; margin-bottom: 12px; text-align: justify;">
-                        "مَنْ عَمِلَ صَالِحًا فَلِنَفْسِهِ ۖ وَمَنْ أَسَاءَ فَعَلَيْهَا"
-                    </div>
-                    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 10px;">
-                        هر کس کار شایسته‌‌ای کند، به سود خود اوست و هر کس بدی کند، به زیان خود اوست
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-                        <span>سوره فصلت - آیه ۴۶</span>
-                        <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white;">
-                            <i class="fas fa-share-alt"></i> اشتراک
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- نماد ها و مجوز ها -->
-            <div class="section-title">
-                <i class="fas fa-shield-alt"></i>
-                نماد ها و مجوز ها
-            </div>
-            <div class="card" style="margin-bottom: 16px;">
-                <div class="card-body" style="padding: 16px;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                        <!-- نماد اعتماد الکترونیکی -->
-                        <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                            <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #4caf50, #2e7d32); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-shield-alt" style="font-size: 24px; color: white;"></i>
-                            </div>
-                            <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">نماد اعتماد الکترونیکی</div>
-                            <div style="font-size: 9px; color: var(--text-secondary);">دارای مجوز رسمی</div>
-                        </div>
-
-                        <!-- نماد ساماندهی -->
-                        <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                            <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #2196f3, #1565c0); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-certificate" style="font-size: 24px; color: white;"></i>
-                            </div>
-                            <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">ساماندهی کسب‌وکار</div>
-                            <div style="font-size: 9px; color: var(--text-secondary);">ثبت شده در سامانه</div>
-                        </div>
-
-                        <!-- نماد پرداخت امن -->
-                        <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                            <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #ff9800, #ef6c00); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-credit-card" style="font-size: 24px; color: white;"></i>
-                            </div>
-                            <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">پرداخت امن</div>
-                            <div style="font-size: 9px; color: var(--text-secondary);">درگاه معتبر بانکی</div>
-                        </div>
-
-                        <!-- مجوز نشر -->
-                        <div style="text-align: center; padding: 10px; background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                            <div style="width: 50px; height: 50px; margin: 0 auto 6px; background: linear-gradient(135deg, #9c27b0, #6a1b9a); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-book-reader" style="font-size: 24px; color: white;"></i>
-                            </div>
-                            <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">مجوز نشر دیجیتال</div>
-                            <div style="font-size: 9px; color: var(--text-secondary);">وزارت فرهنگ و ارشاد</div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); text-align: center;">
-                        <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
-                            تمامی محتوای این سایت دارای مجوز های لازم بوده و استفاده از آن با رعایت قوانین کپی رایت مجاز می باشد.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+{% if site_settings.maintenance_mode %}
+<div style="position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); display:flex; align-items:center; justify-content:center; padding:24px;">
+    <div style="background:var(--card-bg,#fff); border-radius:var(--radius,12px); padding:32px; text-align:center; max-width:340px;text-align: center;align-items: center;justify-content: center;">
+        <i class="fas fa-tools" style="font-size:48px; color:var(--primary,#f65b5b); margin-bottom:16px; display:block;"></i>
+        <h2 style="margin-bottom:12px; font-size:18px;">در حال به‌روزرسانی</h2>
+        <p style="font-size:14px; color:var(--text-secondary); line-height:1.7;">{{ site_settings.maintenance_message }}</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/books.js' %}"></script>
+{% if site_settings.footer_scripts %}{{ site_settings.footer_scripts|safe }}{% endif %}
+<script>
+const sliderEl = document.getElementById('imageSlider');
+if (sliderEl && sliderEl.dataset.autoplay) {
+    window.__sliderAutoPlay = sliderEl.dataset.autoplay === 'true';
+    window.__sliderInterval = parseInt(sliderEl.dataset.interval) || 4000;
+}
+
+// Function to set active tab (matching old.html JS if any)
+function setActiveTab(button) {
+    const tabs = button.parentElement.querySelectorAll('.category-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    button.classList.add('active');
+}
+</script>
 {% endblock %}

@@ -1,0 +1,26 @@
+<!-- main/partials/podcasts_row.html -->
+{% load static %}
+{% if featured_podcasts %}
+    {% for podcast in featured_podcasts %}
+    <a href="{% url 'podcasts:podcast_detail' podcast.slug %}" class="podcast-item">
+        <img src="{{ podcast.cover_image.url|default:'/static/imgs/default-podcast.jpg' }}" alt="{{ podcast.title }}" class="podcast-cover">
+        <div class="podcast-info">
+            <div class="podcast-title">{{ podcast.title|truncatechars:30 }}</div>
+            <div class="podcast-host">{{ podcast.host|truncatechars:20 }}</div>
+            <div class="podcast-duration">{{ podcast.duration_display }}</div>
+            <div class="podcast-rating">
+                <i class="fas fa-star"></i> {{ podcast.rating }}
+            </div>
+            {% if podcast.access_type == 'free' %}
+            <div class="podcast-price">رایگان</div>
+            {% elif podcast.discount_percent > 0 %}
+            <div class="podcast-price">{{ podcast.final_price }} تومان <span class="discount">{{ podcast.price }} تومان</span></div>
+            {% else %}
+            <div class="podcast-price">{{ podcast.price }} تومان</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <p>هیچ صوت پیشنهادی موجود نیست.</p>
+{% endif %}
