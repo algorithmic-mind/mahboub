@@ -8,12 +8,35 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>{% block title %}سامانه جامع محبوب{% endblock %}</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     
     {% load static %}
     <script src="{% static 'js/theme-manager.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+
+    <style>
+        :root {
+            --font-primary: 
+            {% if site_settings.font_primary == 'custom' and site_settings.font_custom_url %}
+                'CustomFont', sans-serif;
+            {% else %}
+                '{{ site_settings.font_primary }}', sans-serif;
+            {% endif %}
+        }
+        
+        /* اعمال فونت انتخابی روی همه عناصر */
+        * {
+            font-family: var(--font-primary) !important;
+        }
+        
+        /* استثناها - اگر المان‌هایی هستند که نباید تغییر فونت بدهند */
+        .fa, .fas, .far, .fab, [class*="icon-"] {
+            font-family: 'Font Awesome 5 Free' !important;
+        }
+    </style>
+    
     
     {% block extra_css %}{% endblock %}
 </head>
