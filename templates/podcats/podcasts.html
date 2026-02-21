@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}صوت محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/podcasts.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title"><i class="fas fa-microphone-alt"></i> صوت محبوب</h1>
+    <p class="page-subtitle">پادکست‌های مذهبی و معارف اسلامی</p>
+</div>
+
+{% if featured %}
+<div class="featured-podcast">
+    <div class="featured-image" style="background:{{ featured.gradient }};height:200px;display:flex;align-items:center;justify-content:center;position:relative;">
+        {% if featured.cover_image %}
+        <img src="{{ featured.cover_image.url }}" alt="{{ featured.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;">
+        {% else %}
+        <i class="fas fa-{{ featured.cover_icon }}" style="font-size:64px;color:rgba(255,255,255,.4);"></i>
+        {% endif %}
+        <div class="play-overlay">
+            <a href="{% url 'podcasts:podcast_detail' featured.slug %}" class="featured-play-btn">
+                <i class="fas fa-play"></i>
+            </a>
+        </div>
+    </div>
+    <div class="featured-info">
+        <span class="featured-badge">ویژه این هفته</span>
+        <h2 class="featured-title">{{ featured.title }}</h2>
+        <p class="featured-desc">{{ featured.description|truncatechars:100 }}</p>
+        <div class="featured-meta">
+            {% if featured.host %}<span><i class="fas fa-user"></i> {{ featured.host }}</span>{% endif %}
+            <span><i class="fas fa-clock"></i> {{ featured.duration_display }}</span>
+            <span><i class="fas fa-star"></i> {{ featured.rating }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% for cat, podcasts in grouped_podcasts.items %}
+<section class="podcast-category">
+    <div class="section-header">
+        <div class="section-title">
+            {% if cat.icon %}<i class="{{ cat.icon }}"></i>{% else %}<i class="fas fa-microphone"></i>{% endif %}
+            {{ cat.name }}
+        </div>
+        <a href="{% url 'podcasts:podcasts_by_category' cat.slug %}" class="view-all">
+            مشاهده همه <i class="fas fa-chevron-left"></i>
+        </a>
+    </div>
+    <div class="podcasts-scroll">
+        {% for p in podcasts %}
+        <a href="{% url 'podcasts:podcast_detail' p.slug %}" class="podcast-card" style="text-decoration:none;color:inherit;">
+            <div class="podcast-cover" style="background:{{ p.gradient }};">
+                {% if p.cover_image %}
+                <img src="{{ p.cover_image.url }}" alt="{{ p.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+                {% else %}
+                <i class="fas fa-{{ p.cover_icon }}"></i>
+                {% endif %}
+                <button class="podcast-play-btn" onclick="event.preventDefault()">
+                    <i class="fas fa-play"></i>
+                </button>
+                {% if p.access_type != 'free' %}
+                <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);color:white;padding:3px 8px;border-radius:8px;font-size:10px;">
+                    {% if p.access_type == 'paid' %}پولی{% else %}ویژه{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="podcast-info">
+                <h3 class="podcast-title">{{ p.title|truncatechars:30 }}</h3>
+                <p class="podcast-author">{{ p.host|default:p.series.host|default:'' }}</p>
+                <div class="podcast-meta">
+                    <span><i class="fas fa-headphones"></i> {{ p.plays }}</span>
+                    <span class="podcast-duration">{{ p.duration_display }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% empty %}
+<div style="text-align:center;padding:48px 16px;color:var(--text-secondary);">
+    <i class="fas fa-microphone" style="font-size:40px;margin-bottom:12px;display:block;opacity:.3;"></i>
+    <p>هیچ پادکستی موجود نیست.</p>
+</div>
+{% endfor %}
+
+{% endblock %}

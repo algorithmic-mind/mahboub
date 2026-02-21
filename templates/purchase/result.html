@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if success %}پرداخت موفق{% else %}پرداخت ناموفق{% endif %} | محبوب{% endblock %}
+
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;">
+    <div style="background:var(--card-bg);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);padding:40px 32px;max-width:400px;width:100%;text-align:center;">
+        
+        {% if success %}
+        <div style="width:80px;height:80px;border-radius:50%;background:#d1e7dd;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <i class="fas fa-check" style="font-size:36px;color:#198754;"></i>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:12px;">پرداخت موفق!</h2>
+        <p style="color:var(--text-secondary);margin-bottom:8px;">{{ message }}</p>
+        <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px 16px;margin:20px 0;font-size:13px;color:var(--text-secondary);">
+            <div style="margin-bottom:4px;">شماره سفارش: <strong>{{ purchase.ref_id }}</strong></div>
+            <div>کد پیگیری زرین‌پال: <strong>{{ ref_id }}</strong></div>
+        </div>
+        <a href="{{ content_url }}" class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;">
+            <i class="fas fa-play-circle"></i>
+            مشاهده محتوا
+        </a>
+        
+        {% else %}
+        <div style="width:80px;height:80px;border-radius:50%;background:#f8d7da;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <i class="fas fa-times" style="font-size:36px;color:#dc3545;"></i>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:12px;">پرداخت ناموفق</h2>
+        <p style="color:var(--text-secondary);margin-bottom:20px;">{{ message }}</p>
+        <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px 16px;margin:0 0 20px;font-size:13px;color:var(--text-secondary);">
+            شماره سفارش: <strong>{{ purchase.ref_id }}</strong>
+        </div>
+        <a href="/" class="btn btn-secondary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;">
+            <i class="fas fa-home"></i>
+            بازگشت به خانه
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

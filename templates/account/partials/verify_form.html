@@ -40,7 +40,7 @@
             <button class="resend-btn"
                     id="resendBtn"
                     disabled
-                    hx-post="/resend-code/"
+                    hx-post="/account/resend-code/"
                     hx-target="#resend-result"
                     hx-swap="innerHTML"
                     hx-on::after-request="resetTimer()"
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Verify Button -->
-        <form hx-post="/verify-code/"
+        <form hx-post="/account/verify-code/"
               hx-target="#otp-error-container"
               hx-swap="innerHTML"
               id="verify-form">
@@ -68,7 +68,7 @@
 
         <button class="btn btn-secondary btn-large"
                 type="button"
-                onclick="window.location.href='/login/'">
+                onclick="window.location.href='/account/login/'">
             <i class="fas fa-edit"></i>
             <span>تغییر شماره موبایل</span>
         </button>

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}نگاره محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title"><i class="fas fa-video"></i> نگاره محبوب</h1>
+    <p class="page-subtitle">دوره‌های ویدیویی مذهبی و معارف اسلامی</p>
+</div>
+
+{% if featured %}
+<div class="featured-course">
+    <div class="featured-thumbnail" style="position:relative;height:225px;overflow:hidden;">
+        {% if featured.cover_image %}
+        <img src="{{ featured.cover_image.url }}" alt="{{ featured.title }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+        <div style="width:100%;height:100%;background:{{ featured.gradient }};display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-{{ featured.cover_icon }}" style="font-size:80px;color:rgba(255,255,255,.3);"></i>
+        </div>
+        {% endif %}
+        <div class="video-overlay">
+            <a href="{% url 'courses:course_detail' featured.slug %}" class="featured-play-btn">
+                <i class="fas fa-play"></i>
+            </a>
+            <div class="video-duration" style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.8);color:white;padding:6px 12px;border-radius:6px;font-size:12px;">
+                {{ featured.duration_display }}
+            </div>
+        </div>
+    </div>
+    <div class="featured-info" style="padding:20px;">
+        <span class="featured-badge">ویژه این هفته</span>
+        <h2 class="featured-title">{{ featured.title }}</h2>
+        <p class="featured-desc">{{ featured.short_desc|default:featured.description|truncatechars:120 }}</p>
+        <div class="featured-meta" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;">
+            <div class="meta-item"><i class="fas fa-user-tie"></i><span>{{ featured.instructor }}</span></div>
+            <div class="meta-item"><i class="fas fa-play-circle"></i><span>{{ featured.lessons_count }} درس</span></div>
+            <div class="meta-item"><i class="fas fa-signal"></i><span>{{ featured.get_level_display }}</span></div>
+            <div class="meta-item"><i class="fas fa-star" style="color:#ffa726;"></i><span>{{ featured.rating }}</span></div>
+        </div>
+        <div class="featured-price" style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--gray-200);">
+            {% if featured.access_type == 'free' %}
+            <span style="color:var(--success);font-weight:700;font-size:18px;">رایگان</span>
+            {% else %}
+            <span style="color:var(--primary);font-weight:700;font-size:18px;">{{ featured.final_price|floatformat:0 }} تومان</span>
+            {% endif %}
+            <a href="{% url 'courses:course_detail' featured.slug %}" class="btn btn-primary" style="padding:10px 20px;">مشاهده دوره</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% for cat, courses in grouped_courses.items %}
+<section class="course-category" style="margin-bottom:28px;">
+    <div class="section-header">
+        <div class="section-title">
+            {% if cat.icon %}<i class="{{ cat.icon }}"></i>{% else %}<i class="fas fa-video"></i>{% endif %}
+            {{ cat.name }}
+        </div>
+        <a href="{% url 'courses:courses_by_category' cat.slug %}" class="view-all">
+            مشاهده همه <i class="fas fa-chevron-left"></i>
+        </a>
+    </div>
+    <div class="courses-scroll">
+        {% for course in courses %}
+        <a href="{% url 'courses:course_detail' course.slug %}" class="course-card" style="text-decoration:none;color:inherit;">
+            <div class="course-thumbnail">
+                {% if course.cover_image %}
+                <img src="{{ course.cover_image.url }}" alt="{{ course.title }}">
+                {% else %}
+                <div style="width:100%;height:100%;background:{{ course.gradient }};display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-{{ course.cover_icon }}" style="font-size:48px;color:rgba(255,255,255,.4);"></i>
+                </div>
+                {% endif %}
+                <div class="course-overlay">
+                    <button class="course-play-btn"><i class="fas fa-play"></i></button>
+                </div>
+                <div class="course-duration">{{ course.duration_display }}</div>
+                <div class="course-badge {% if course.access_type == 'free' %}free{% endif %}">
+                    {% if course.access_type == 'free' %}رایگان{% elif course.is_featured %}ویژه{% else %}جدید{% endif %}
+                </div>
+            </div>
+            <div class="course-info">
+                <h3 class="course-title">{{ course.title|truncatechars:50 }}</h3>
+                <p class="course-instructor"><i class="fas fa-user-tie"></i> {{ course.instructor }}</p>
+                <div class="course-stats">
+                    <span class="stat"><i class="fas fa-play-circle"></i> {{ course.lessons_count }} درس</span>
+                    <span class="stat"><i class="fas fa-signal"></i> {{ course.get_level_display }}</span>
+                </div>
+                <div class="course-rating">
+                    <span class="stars">{% for i in "12345" %}<i class="fas fa-star" style="{% if forloop.counter > course.rating %}opacity:.3{% endif %}"></i>{% endfor %}</span>
+                    <span class="rating-value">{{ course.rating }}</span>
+                </div>
+                <div class="course-price {% if course.access_type == 'free' %}free{% endif %}">
+                    {% if course.access_type == 'free' %}رایگان
+                    {% elif course.discount_percent > 0 %}<small style="text-decoration:line-through;opacity:.5;">{{ course.price|floatformat:0 }}</small> {{ course.final_price|floatformat:0 }} تومان
+                    {% else %}{{ course.price|floatformat:0 }} تومان{% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% empty %}
+<div style="text-align:center;padding:48px 16px;color:var(--text-secondary);">
+    <i class="fas fa-video" style="font-size:40px;margin-bottom:12px;display:block;opacity:.3;"></i>
+    <p>هیچ دوره‌ای موجود نیست.</p>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,8 +1,11 @@
-# book/views.py
+"""
+book/views.py — اضافه شدن book_reader به views قبلی
+"""
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 
-from .models import Book, BookCategory
+from .models import Book, BookCategory, BookPage, BookChapter
 
 PAGE_SIZE = 12
 
@@ -29,7 +32,6 @@ ICONS = [
 
 
 def _enrich_books(queryset):
-    """gradient و icon را به هر کتاب اضافه می‌کند — بدون templatetag."""
     books = list(queryset)
     for book in books:
         idx = book.pk % len(GRADIENTS)
@@ -39,7 +41,6 @@ def _enrich_books(queryset):
 
 
 def books_list(request):
-    """صفحه اصلی کتابخانه — گروه‌بندی بر اساس دسته‌بندی."""
     categories = BookCategory.objects.filter(
         parent__isnull=True
     ).prefetch_related('books').order_by('order', 'name')
@@ -62,14 +63,12 @@ def books_list(request):
 
 
 def books_by_category(request, slug):
-    """صفحه اختصاصی یک دسته‌بندی با pagination و فیلتر."""
     category = get_object_or_404(BookCategory, slug=slug)
 
     qs = Book.objects.filter(
         is_active=True, category=category
     ).select_related('category')
 
-    # فیلترها
     q      = request.GET.get('q', '').strip()
     access = request.GET.get('access', '').strip()
     sort   = request.GET.get('sort', '-created_at').strip()
@@ -88,7 +87,7 @@ def books_by_category(request, slug):
     paginator  = Paginator(qs, PAGE_SIZE)
     page_obj   = paginator.get_page(request.GET.get('page', 1))
     books      = _enrich_books(page_obj.object_list)
-    page_obj.enriched = books  # attach برای دسترسی در template
+    page_obj.enriched = books
 
     context = {
         'category':        category,
@@ -103,20 +102,122 @@ def books_by_category(request, slug):
 
 
 def book_detail(request, slug):
-    """صفحه جزئیات کتاب."""
     book     = get_object_or_404(Book, slug=slug, is_active=True)
     chapters = book.chapters.prefetch_related('pages').order_by('order')
 
     Book.objects.filter(pk=book.pk).update(views=book.views + 1)
 
-    # gradient برای جلد
     idx = book.pk % len(GRADIENTS)
     book.gradient  = GRADIENTS[idx]
     book.cover_icon = ICONS[idx % len(ICONS)]
 
+    # بررسی دسترسی
+    from purchase.models import Purchase
+    has_access = (
+        book.access_type == 'free'
+        or Purchase.has_access(request.user, 'book', book.pk)
+    )
+
     context = {
         'book':        book,
         'chapters':    chapters,
+        'has_access':  has_access,
         'active_menu': 'books',
     }
     return render(request, 'books/book_detail.html', context)
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Book Reader — بر اساس دیتابیس BookPage
+# ─────────────────────────────────────────────────────────────────────────
+
+def book_reader(request, slug):
+    """صفحه خواندن — از دیتابیس BookPage"""
+    book = get_object_or_404(Book, slug=slug, is_active=True)
+
+    from purchase.models import Purchase
+    # فقط فصل‌های preview یا خریداری‌شده
+    has_access = (
+        book.access_type == 'free'
+        or Purchase.has_access(request.user, 'book', book.pk)
+    )
+
+    # صفحه درخواستی
+    try:
+        page_order = int(request.GET.get('page', 1))
+    except ValueError:
+        page_order = 1
+
+    # صفحه‌های قابل‌دسترس
+    if has_access:
+        pages_qs = BookPage.objects.filter(book=book).order_by('order')
+    else:
+        # فقط صفحات فصل‌های preview
+        preview_chapters = book.chapters.filter(is_preview=True)
+        if preview_chapters.exists():
+            pages_qs = BookPage.objects.filter(
+                book=book, chapter__in=preview_chapters
+            ).order_by('order')
+        else:
+            # اگر هیچ فصل preview‌ای نیست، ۵ صفحه اول نشان بده
+            pages_qs = BookPage.objects.filter(book=book).order_by('order')[:5]
+
+    total_pages = pages_qs.count()
+    if total_pages == 0:
+        # محتوایی در دیتابیس نیست — نمایش نمونه استاتیک
+        return render(request, 'books/book_reader.html', {
+            'book': book,
+            'page': None,
+            'total_pages': 0,
+            'has_access': has_access,
+            'no_content': True,
+        })
+
+    page_order = max(1, min(page_order, total_pages))
+    page_list  = list(pages_qs)
+    current_page = page_list[page_order - 1]
+
+    context = {
+        'book':         book,
+        'page':         current_page,
+        'page_order':   page_order,
+        'total_pages':  total_pages,
+        'has_prev':     page_order > 1,
+        'has_next':     page_order < total_pages,
+        'has_access':   has_access,
+        'no_content':   False,
+    }
+    return render(request, 'books/book_reader.html', context)
+
+
+def book_page_api(request, slug):
+    """AJAX — بارگذاری یک صفحه بدون reload"""
+    book = get_object_or_404(Book, slug=slug, is_active=True)
+    try:
+        page_order = int(request.GET.get('page', 1))
+    except ValueError:
+        return JsonResponse({'error': 'invalid'}, status=400)
+
+    from purchase.models import Purchase
+    has_access = (
+        book.access_type == 'free'
+        or Purchase.has_access(request.user, 'book', book.pk)
+    )
+
+    if has_access:
+        page = BookPage.objects.filter(book=book, order=page_order).first()
+    else:
+        preview_chapters = book.chapters.filter(is_preview=True)
+        page = BookPage.objects.filter(
+            book=book, order=page_order, chapter__in=preview_chapters
+        ).first()
+
+    if not page:
+        return JsonResponse({'error': 'not_found'}, status=404)
+
+    return JsonResponse({
+        'page_number': page.page_number,
+        'heading':     page.heading,
+        'content':     page.content,
+        'order':       page.order,
+    })

@@ -40,7 +40,7 @@ def send_code(request):
                 '<div class="input-error">شماره موبایل معتبر نیست</div>',
                 status=422
             )
-        return redirect('login')
+        return redirect('account:login')
 
     phone = '0' + phone_raw  # ذخیره با صفر پیشرو
 
@@ -65,10 +65,10 @@ def send_code(request):
             'phone_display': _format_phone(phone),
             'sms_sent': sms_sent,
         })
-        response['HX-Push-Url'] = '/verify/'
+        response['HX-Push-Url'] = '/account/verify/'
         return response
 
-    return redirect('verify')
+    return redirect('account:verify')
 
 
 # ─────────────────────────────────────────
@@ -97,7 +97,7 @@ def verify_code(request):
                 '<div class="input-error">جلسه منقضی شده. دوباره وارد شوید</div>',
                 status=422
             )
-        return redirect('login')
+        return redirect('account:login')
 
     try:
         user = User.objects.get(phone_number=phone)
@@ -107,7 +107,7 @@ def verify_code(request):
                 '<div class="input-error">کاربر یافت نشد</div>',
                 status=422
             )
-        return redirect('login')
+        return redirect('account:login')
 
     if not user.is_otp_valid(code):
         if is_htmx(request):
@@ -129,10 +129,10 @@ def verify_code(request):
 
     if is_htmx(request):
         response = HttpResponse(status=204)
-        response['HX-Redirect'] = '/profile/'
+        response['HX-Redirect'] = '/account/profile/'
         return response
 
-    return redirect('profile')
+    return redirect('account:profile')
 
 
 @require_http_methods(["POST"])
@@ -171,9 +171,9 @@ def logout_view(request):
     logout(request)
     if is_htmx(request):
         response = HttpResponse(status=204)
-        response['HX-Redirect'] = '/login/'
+        response['HX-Redirect'] = '/account/login/'
         return response
-    return redirect('login')
+    return redirect('account:login')
 
 
 # ─────────────────────────────────────────

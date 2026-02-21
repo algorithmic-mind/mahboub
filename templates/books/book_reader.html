@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} | کتاب‌خوان محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/book-reader.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Reader Header -->
+<header class="reader-header">
+    <div class="reader-header-content">
+        <a href="{% url 'books:book_detail' book.slug %}" class="reader-back">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <div class="reader-title">
+            <h1>{{ book.title }}</h1>
+            <p id="pageIndicator">
+                {% if no_content %}متنی موجود نیست
+                {% else %}صفحه {{ page_order }} از {{ total_pages }}{% endif %}
+            </p>
+        </div>
+        <div class="reader-actions">
+            <button class="reader-btn" id="settingsBtn" title="تنظیمات">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button class="reader-btn" id="bookmarkReaderBtn" title="نشان">
+                <i class="far fa-bookmark"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Reader Content -->
+<main class="reader-content" id="readerContent">
+    <div class="watermark">{{ request.user.phone_number|default:'محبوب' }}</div>
+
+    {% if no_content %}
+    <div class="reader-page" style="text-align:center;padding:48px 16px;">
+        <i class="fas fa-book-open" style="font-size:48px;color:var(--gray-300);margin-bottom:16px;display:block;"></i>
+        <p style="color:var(--text-secondary);margin-bottom:20px;">محتوای این کتاب هنوز در سیستم وارد نشده است.</p>
+        <a href="{% url 'books:book_detail' book.slug %}" class="btn btn-secondary">بازگشت</a>
+    </div>
+
+    {% elif not has_access %}
+    <div class="reader-page" style="text-align:center;padding:48px 16px;">
+        <i class="fas fa-lock" style="font-size:48px;color:var(--gray-400);margin-bottom:16px;display:block;"></i>
+        <h3 style="margin-bottom:8px;">محتوای محدود</h3>
+        <p style="color:var(--text-secondary);margin-bottom:20px;">شما فقط به فصل‌های رایگان دسترسی دارید.</p>
+        {% if page %}
+        <div id="pageContent" class="reader-page-inner">
+            {% if page.heading %}
+            <h3 class="section-title">{{ page.heading }}</h3>
+            {% endif %}
+            <div class="reader-text">{{ page.content|safe }}</div>
+        </div>
+        {% endif %}
+        <div style="margin-top:24px;padding:20px;background:var(--gray-50);border-radius:var(--radius-lg);border:2px dashed var(--gray-300);">
+            <p style="margin-bottom:12px;font-weight:600;">برای خواندن ادامه کتاب، آن را خریداری کنید</p>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'purchase:start' 'book' book.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i>
+                    خرید — {{ book.final_price|floatformat:0 }} تومان
+                </button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                ورود برای خرید
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="reader-page" id="pageContent">
+        {% if page.heading %}
+        <h3 class="section-title">{{ page.heading }}</h3>
+        {% endif %}
+        <div class="reader-text-wrap">
+            {{ page.content|safe }}
+        </div>
+        {% if page.page_image %}
+        <div style="text-align:center;margin:20px 0;">
+            <img src="{{ page.page_image.url }}" alt="تصویر صفحه" style="max-width:100%;border-radius:var(--radius);">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</main>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" id="highlightText">
+        <i class="fas fa-highlighter"></i><span>هایلایت کردن</span>
+    </div>
+    <div class="context-menu-item" id="addNote">
+        <i class="fas fa-sticky-note"></i><span>افزودن یادداشت</span>
+    </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+        <h3>تنظیمات خواندن</h3>
+        <button class="settings-close" id="settingsClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="settings-body">
+        <div class="setting-item">
+            <label>اندازه فونت</label>
+            <div class="font-size-controls">
+                <button class="font-btn" id="decreaseFont"><i class="fas fa-minus"></i></button>
+                <span id="fontSizeDisplay">۱۶</span>
+                <button class="font-btn" id="increaseFont"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label>فاصله خطوط</label>
+            <div class="line-height-controls">
+                <button class="line-btn" data-height="1.5">کم</button>
+                <button class="line-btn active" data-height="1.8">متوسط</button>
+                <button class="line-btn" data-height="2.2">زیاد</button>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label>حالت شب</label>
+            <button class="theme-switch" id="themeSwitch">
+                <span class="switch-label">روز</span>
+                <div class="switch-toggle"><div class="switch-circle"></div></div>
+                <span class="switch-label">شب</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reader Footer -->
+{% if not no_content %}
+<footer class="reader-footer">
+    <div class="reader-progress">
+        <input type="range" class="progress-slider" id="progressSlider"
+               min="1" max="{{ total_pages }}" value="{{ page_order }}">
+    </div>
+    <div class="reader-controls">
+        <button class="control-btn" id="prevPage" {% if not has_prev %}disabled{% endif %}>
+            <i class="fas fa-chevron-right"></i><span>قبلی</span>
+        </button>
+        <div class="page-indicator">
+            <span id="currentPage">{{ page_order }}</span>
+            <span>/</span>
+            <span>{{ total_pages }}</span>
+        </div>
+        <button class="control-btn" id="nextPage" {% if not has_next %}disabled{% endif %}>
+            <span>بعدی</span><i class="fas fa-chevron-left"></i>
+        </button>
+    </div>
+</footer>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const BOOK_SLUG    = '{{ book.slug }}';
+const TOTAL_PAGES  = {{ total_pages }};
+let   currentPage  = {{ page_order }};
+const API_URL      = "{% url 'books:book_page_api' book.slug %}";
+
+// ── ناوبری AJAX ─────────────────────────────────────────────────────────
+async function loadPage(pageNum) {
+    if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
+    try {
+        const resp = await fetch(`${API_URL}?page=${pageNum}`);
+        if (!resp.ok) throw new Error('not found');
+        const data = await resp.json();
+
+        let html = '';
+        if (data.heading) html += `<h3 class="section-title">${data.heading}</h3>`;
+        html += `<div class="reader-text-wrap">${data.content}</div>`;
+
+        document.getElementById('pageContent').innerHTML = html;
+        currentPage = pageNum;
+        document.getElementById('currentPage').textContent = pageNum;
+        document.getElementById('pageIndicator').textContent = `صفحه ${pageNum} از ${TOTAL_PAGES}`;
+        document.getElementById('progressSlider').value = pageNum;
+        document.getElementById('prevPage').disabled = pageNum === 1;
+        document.getElementById('nextPage').disabled = pageNum === TOTAL_PAGES;
+
+        // ذخیره پیشرفت
+        localStorage.setItem(`book_${BOOK_SLUG}_page`, pageNum);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {
+        // fallback: reload
+        window.location.href = `?page=${pageNum}`;
+    }
+}
+
+document.getElementById('prevPage')?.addEventListener('click', () => loadPage(currentPage - 1));
+document.getElementById('nextPage')?.addEventListener('click', () => loadPage(currentPage + 1));
+document.getElementById('progressSlider')?.addEventListener('change', e => loadPage(parseInt(e.target.value)));
+
+// کیبورد
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') loadPage(currentPage - 1);
+    if (e.key === 'ArrowLeft')  loadPage(currentPage + 1);
+});
+
+// بازیابی صفحه از localStorage
+const saved = localStorage.getItem(`book_${BOOK_SLUG}_page`);
+if (saved && parseInt(saved) !== currentPage) {
+    // پیشنهاد ادامه مطالعه
+    const cont = confirm(`آیا می‌خواهید از صفحه ${saved} ادامه دهید؟`);
+    if (cont) loadPage(parseInt(saved));
+}
+</script>
+<script src="{% static 'js/book-reader.js' %}"></script>
+{% endblock %}

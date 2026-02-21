@@ -25,11 +25,20 @@ admin.site.index_title = "خوش آمدید به پنل مدیریت"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls')),
-    path('', include('account.urls')),
-    path('books/', include('book.urls')),
+
+    # ── اپ‌ها ─────────────────────────────────────────────────────────
+    path('',include('main.urls')),
+    path('account/',  include('account.urls')),
+    path('books/',    include('book.urls')),
+    path('podcasts/', include('podcast.urls')),
+    path('courses/',  include('course.urls')),
+    path('purchase/', include('purchase.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+
+

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ lesson.title }} | {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+body{padding-bottom:0;}
+.lesson-header{background:var(--card-bg);padding:12px 16px;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:var(--shadow-sm);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:12px;}
+.lesson-main{padding-top:64px;padding-bottom:16px;max-width:900px;margin:0 auto;}
+.video-container{position:relative;background:#000;border-radius:var(--radius-xl);overflow:hidden;margin-bottom:16px;}
+video{width:100%;display:block;max-height:280px;}
+.sidebar-toggle{position:fixed;bottom:80px;left:16px;width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;border:none;cursor:pointer;box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;z-index:50;}
+.lesson-sidebar{position:fixed;bottom:0;left:0;right:0;height:60vh;background:var(--card-bg);border-radius:var(--radius-xl) var(--radius-xl) 0 0;box-shadow:var(--shadow-xl);z-index:200;transform:translateY(100%);transition:transform .3s ease;overflow-y:auto;}
+.lesson-sidebar.open{transform:translateY(0);}
+.sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;display:none;}
+.sidebar-backdrop.open{display:block;}
+.lsn-item{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--gray-100);text-decoration:none;color:inherit;}
+.lsn-item.active{background:rgba(246,91,91,.08);border-right:3px solid var(--primary);}
+.lsn-item:hover{background:var(--gray-50);}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- هدر ثابت -->
+<div class="lesson-header">
+    <a href="{% url 'courses:course_detail' course.slug %}" style="color:var(--text-primary);text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1.5px solid var(--gray-300);">
+        <i class="fas fa-arrow-right"></i>
+    </a>
+    <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ lesson.title }}</div>
+        <div style="font-size:11px;color:var(--text-secondary);">{{ course.title }}</div>
+    </div>
+    <button class="sidebar-toggle" style="position:static;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--gray-300);background:var(--card-bg);color:var(--text-primary);" onclick="toggleSidebar()">
+        <i class="fas fa-list"></i>
+    </button>
+</div>
+
+<div class="lesson-main" style="padding:72px 16px 24px;">
+
+    <!-- محتوای درس -->
+    {% if lesson.lesson_type == 'video' %}
+    <div class="video-container">
+        {% if lesson.video_url %}
+        {% if 'youtube' in lesson.video_url or 'youtu.be' in lesson.video_url %}
+        <div style="position:relative;padding-bottom:56.25%;background:#000;">
+            <iframe style="position:absolute;inset:0;width:100%;height:100%;border:0;"
+                    src="{{ lesson.video_url|replace:'watch?v=','embed/'|replace:'youtu.be/','youtube.com/embed/' }}"
+                    allowfullscreen></iframe>
+        </div>
+        {% else %}
+        <video controls>
+            <source src="{{ lesson.video_url }}">
+        </video>
+        {% endif %}
+        {% elif lesson.video_file %}
+        <video controls>
+            <source src="{{ lesson.video_file.url }}">
+        </video>
+        {% else %}
+        <div style="padding:48px;text-align:center;color:#888;background:#111;">
+            <i class="fas fa-video-slash" style="font-size:40px;margin-bottom:12px;display:block;"></i>
+            فایل ویدیو موجود نیست.
+        </div>
+        {% endif %}
+    </div>
+
+    {% elif lesson.lesson_type == 'audio' %}
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:var(--radius-xl);padding:40px 24px;text-align:center;margin-bottom:16px;">
+        <i class="fas fa-headphones" style="font-size:64px;color:rgba(255,255,255,.6);margin-bottom:20px;display:block;"></i>
+        {% if lesson.video_url %}
+        <audio controls style="width:100%;border-radius:8px;"><source src="{{ lesson.video_url }}"></audio>
+        {% elif lesson.video_file %}
+        <audio controls style="width:100%;border-radius:8px;"><source src="{{ lesson.video_file.url }}"></audio>
+        {% endif %}
+    </div>
+
+    {% elif lesson.lesson_type == 'pdf' %}
+    <div style="background:var(--card-bg);border-radius:var(--radius-xl);padding:24px;text-align:center;margin-bottom:16px;border:1px solid var(--gray-200);">
+        <i class="fas fa-file-pdf" style="font-size:48px;color:#dc3545;margin-bottom:12px;display:block;"></i>
+        <p style="color:var(--text-secondary);margin-bottom:16px;">فایل PDF این درس</p>
+        {% if lesson.video_file %}
+        <a href="{{ lesson.video_file.url }}" class="btn btn-primary" download>
+            <i class="fas fa-download"></i> دانلود PDF
+        </a>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div style="background:var(--card-bg);border-radius:var(--radius-xl);padding:24px;margin-bottom:16px;border:1px solid var(--gray-200);">
+        <i class="fas fa-file-alt" style="font-size:36px;color:var(--primary);margin-bottom:12px;display:block;"></i>
+        <p style="color:var(--text-secondary);">محتوای متنی این درس</p>
+    </div>
+    {% endif %}
+
+    <!-- عنوان و اطلاعات -->
+    <div style="background:var(--card-bg);border-radius:var(--radius-xl);padding:20px;margin-bottom:16px;border:1px solid var(--gray-200);">
+        <h2 style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">{{ lesson.title }}</h2>
+        <div style="display:flex;gap:16px;font-size:13px;color:var(--text-secondary);">
+            <span><i class="fas fa-{{ lesson.lesson_type }}" style="color:var(--primary);"></i> {{ lesson.get_lesson_type_display }}</span>
+            {% if lesson.duration %}
+            <span><i class="fas fa-clock" style="color:var(--primary);"></i>
+                {% with total=lesson.duration %}
+                    {{ total|floatformat:0 }} ثانیه
+                {% endwith %}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- دکمه‌های قبلی/بعدی -->
+    <div style="display:flex;gap:12px;">
+        <a href="{% url 'courses:course_detail' course.slug %}" class="btn btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <i class="fas fa-list"></i>
+            فهرست درس‌ها
+        </a>
+    </div>
+</div>
+
+<!-- سایدبار درس‌ها -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+<div class="lesson-sidebar" id="lessonSidebar">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card-bg);z-index:1;">
+        <h3 style="font-size:16px;font-weight:600;">سرفصل‌های دوره</h3>
+        <button onclick="toggleSidebar()" style="width:32px;height:32px;border:none;background:var(--gray-100);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {% for section in sections %}
+    <div style="padding:10px 16px 4px;font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;background:var(--gray-50);">
+        {{ section.title }}
+    </div>
+    {% for lsn in section.lessons.all %}
+    <a href="{% url 'courses:lesson_view' course.slug lsn.pk %}" class="lsn-item {% if lsn.pk == lesson.pk %}active{% endif %}">
+        <div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:{% if lsn.lesson_type == 'video' %}#e3f2fd{% elif lsn.lesson_type == 'audio' %}#fff3e0{% else %}#f3e5f5{% endif %};font-size:12px;color:var(--primary);flex-shrink:0;">
+            <i class="fas fa-{% if lsn.lesson_type == 'video' %}play{% elif lsn.lesson_type == 'audio' %}headphones{% elif lsn.lesson_type == 'pdf' %}file-pdf{% else %}file-alt{% endif %}"></i>
+        </div>
+        <span style="font-size:13px;{% if lsn.pk == lesson.pk %}font-weight:700;color:var(--primary);{% endif %}">{{ lsn.title|truncatechars:35 }}</span>
+    </a>
+    {% endfor %}
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleSidebar() {
+    document.getElementById('lessonSidebar').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
+}
+</script>
+{% endblock %}

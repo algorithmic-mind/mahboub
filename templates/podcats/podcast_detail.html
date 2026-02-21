@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ podcast.title }} | صوت محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/podcasts.css' %}">
+<style>
+.audio-player-container{background:var(--card-bg);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-xl);margin-bottom:20px;border:1px solid var(--gray-200);}
+.audio-cover{width:100%;max-width:280px;aspect-ratio:1;border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;overflow:hidden;position:relative;}
+.audio-cover i{font-size:72px;color:rgba(255,255,255,.5);}
+.audio-title{font-size:20px;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:6px;}
+.audio-host{text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:20px;}
+audio{width:100%;border-radius:var(--radius);margin-bottom:16px;}
+.lock-overlay{text-align:center;padding:32px;background:var(--gray-50);border-radius:var(--radius-xl);border:2px dashed var(--gray-300);}
+.lock-overlay i{font-size:48px;color:var(--gray-400);margin-bottom:12px;display:block;}
+.episode-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border-radius:var(--radius-lg);margin-bottom:8px;border:1px solid var(--gray-200);text-decoration:none;color:inherit;transition:all .2s;}
+.episode-item:hover{border-color:var(--primary);transform:translateX(-2px);}
+.episode-item.active{border-color:var(--primary);background:rgba(246,91,91,.05);}
+.episode-num{width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- پلیر اصلی -->
+<div class="audio-player-container">
+    <div class="audio-cover" style="background:{{ podcast.gradient }};">
+        {% if podcast.cover_image %}
+        <img src="{{ podcast.cover_image.url }}" alt="{{ podcast.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+        {% else %}
+        <i class="fas fa-{{ podcast.cover_icon }}"></i>
+        {% endif %}
+    </div>
+
+    <h1 class="audio-title">{{ podcast.title }}</h1>
+    {% if podcast.host %}<p class="audio-host"><i class="fas fa-user"></i> {{ podcast.host }}</p>{% endif %}
+
+    {% if podcast.series %}
+    <p style="text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+        <i class="fas fa-layer-group"></i> {{ podcast.series.title }}
+        {% if podcast.episode_number %} — قسمت {{ podcast.episode_number }}{% endif %}
+    </p>
+    {% endif %}
+
+    {% if has_access %}
+        {% if podcast.audio_url %}
+        <audio controls preload="metadata">
+            <source src="{{ podcast.audio_url }}">
+            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+        </audio>
+        {% elif podcast.audio_file %}
+        <audio controls preload="metadata">
+            <source src="{{ podcast.audio_file.url }}">
+            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+        </audio>
+        {% else %}
+        <div class="lock-overlay">
+            <i class="fas fa-music"></i>
+            <p>فایل صوتی در دسترس نیست.</p>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="lock-overlay">
+            <i class="fas fa-lock"></i>
+            <p style="font-size:15px;font-weight:600;margin-bottom:8px;">برای پخش این پادکست نیاز به خرید دارید</p>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">
+                قیمت:
+                {% if podcast.discount_percent > 0 %}
+                    <del style="opacity:.6;">{{ podcast.price|floatformat:0 }}</del>
+                    <strong style="color:var(--primary);">{{ podcast.final_price|floatformat:0 }} تومان</strong>
+                {% else %}
+                    <strong style="color:var(--primary);">{{ podcast.final_price|floatformat:0 }} تومان</strong>
+                {% endif %}
+            </p>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'purchase:start' 'podcast' podcast.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="fas fa-shopping-cart"></i>
+                    خرید و پخش — {{ podcast.final_price|floatformat:0 }} تومان
+                </button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-sign-in-alt"></i>
+                ورود برای خرید
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- اطلاعات -->
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:13px;color:var(--text-secondary);">
+        <span><i class="fas fa-clock" style="color:var(--primary);"></i> {{ podcast.duration_display }}</span>
+        <span><i class="fas fa-headphones" style="color:var(--primary);"></i> {{ podcast.plays }}</span>
+        <span><i class="fas fa-star" style="color:#ffa726;"></i> {{ podcast.rating }}</span>
+    </div>
+</div>
+
+<!-- توضیحات -->
+{% if podcast.description %}
+<div class="content-section" style="background:var(--card-bg);border-radius:var(--radius-xl);padding:20px;margin-bottom:16px;border:1px solid var(--gray-200);">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:12px;color:var(--text-primary);">
+        <i class="fas fa-align-right" style="color:var(--primary);margin-left:8px;"></i>
+        درباره این قسمت
+    </h3>
+    <p style="font-size:14px;line-height:1.8;color:var(--text-secondary);">{{ podcast.description }}</p>
+</div>
+{% endif %}
+
+<!-- قسمت‌های مجموعه -->
+{% if series_episodes %}
+<div style="background:var(--card-bg);border-radius:var(--radius-xl);padding:20px;border:1px solid var(--gray-200);">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text-primary);">
+        <i class="fas fa-list" style="color:var(--primary);margin-left:8px;"></i>
+        سایر قسمت‌های این مجموعه
+    </h3>
+    {% for ep in series_episodes %}
+    <a href="{% url 'podcasts:podcast_detail' ep.slug %}" class="episode-item">
+        <div class="episode-num">{{ ep.episode_number|default:forloop.counter }}</div>
+        <div class="podcast-cover" style="background:{{ ep.gradient }};width:44px;height:44px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-{{ ep.cover_icon }}" style="font-size:18px;color:rgba(255,255,255,.7);"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ep.title }}</div>
+            <div style="font-size:12px;color:var(--text-secondary);">{{ ep.duration_display }}</div>
+        </div>
+        {% if ep.access_type != 'free' %}
+        <i class="fas fa-lock" style="color:var(--gray-400);font-size:12px;"></i>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ذخیره پیشرفت پخش در localStorage
+const audio = document.querySelector('audio');
+if (audio) {
+    const key = 'podcast_{{ podcast.pk }}_time';
+    const saved = localStorage.getItem(key);
+    if (saved) audio.currentTime = parseFloat(saved);
+    audio.addEventListener('timeupdate', () => {
+        localStorage.setItem(key, audio.currentTime);
+    });
+}
+</script>
+{% endblock %}

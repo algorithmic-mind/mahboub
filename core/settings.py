@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'account.apps.AccountConfig',
+    'purchase.apps.PurchaseConfig',
     'book.apps.BookConfig',
     'podcast.apps.PodcastConfig',
     'blog.apps.BlogConfig',
@@ -180,6 +181,12 @@ AUTH_USER_MODEL = 'account.User'
 # SMS.ir Configuration
 SMSIR_API_KEY = '8Ca4PBnyrDH6t9mQapjjB8eFsU8z6iBxEg0ExI33uaJl6hnlfyvePAKzSwd7XDkt'
 SMSIR_TEMPLATE_ID = 830439  # شناسه قالب OTP در sms.ir
+
+
+ZARINPAL_MERCHANT_ID = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'  # از پنل زرین‌پال
+ZARINPAL_SANDBOX     = True   # در production به False تغییر دهید
+
+
 
 # OTP Settings
 OTP_EXPIRY_MINUTES = 2
