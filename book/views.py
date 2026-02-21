@@ -4,107 +4,102 @@ from django.core.paginator import Paginator
 
 from .models import Book, BookCategory
 
-BOOKS_PER_CATEGORY = 6
 PAGE_SIZE = 12
 
+GRADIENTS = [
+    "linear-gradient(135deg,#667eea,#764ba2)",
+    "linear-gradient(135deg,#f093fb,#f5576c)",
+    "linear-gradient(135deg,#4facfe,#00f2fe)",
+    "linear-gradient(135deg,#fa709a,#fee140)",
+    "linear-gradient(135deg,#a8edea,#fed6e3)",
+    "linear-gradient(135deg,#ff9a9e,#fecfef)",
+    "linear-gradient(135deg,#ffecd2,#fcb69f)",
+    "linear-gradient(135deg,#a1c4fd,#c2e9fb)",
+    "linear-gradient(135deg,#d299c2,#fef9d7)",
+    "linear-gradient(135deg,#f6d365,#fda085)",
+    "linear-gradient(135deg,#84fab0,#8fd3f4)",
+    "linear-gradient(135deg,#96deda,#50c9c3)",
+]
 
-def _apply_filters(request):
-    """پارامترهای GET را پردازش کرده و queryset فیلتر شده برمی‌گرداند."""
-    qs = Book.objects.filter(is_active=True).select_related('category')
-
-    q      = request.GET.get('q', '').strip()
-    cat    = request.GET.get('cat', '').strip()
-    access = request.GET.get('access', '').strip()
-    sort   = request.GET.get('sort', '-created_at').strip()
-
-    if q:
-        qs = (
-            Book.objects.filter(is_active=True, title__icontains=q).select_related('category') |
-            Book.objects.filter(is_active=True, author__icontains=q).select_related('category')
-        ).distinct()
-    if cat:
-        qs = qs.filter(category__slug=cat)
-    if access in ('free', 'paid', 'premium'):
-        qs = qs.filter(access_type=access)
-
-    ALLOWED_SORTS = ('-created_at', '-views', '-rating', 'price', '-price')
-    if sort not in ALLOWED_SORTS:
-        sort = '-created_at'
-    qs = qs.order_by(sort)
-
-    return qs, q, cat, access, sort
+ICONS = [
+    "quran", "book-quran", "mosque", "book-reader",
+    "book", "scroll", "feather", "book-open",
+    "dove", "star-and-crescent", "hands-praying", "crown",
+]
 
 
-def _build_context(request, qs, q, selected_cat, selected_access, selected_sort, categories):
-    """grouped یا flat context بر اساس وضعیت فیلتر."""
-    is_filtered = q or selected_cat or selected_access or selected_sort != '-created_at'
-
-    if not is_filtered:
-        grouped_books = {}
-        for cat in categories:
-            books = list(qs.filter(category=cat)[:BOOKS_PER_CATEGORY])
-            if books:
-                grouped_books[cat] = books
-        return {'grouped_books': grouped_books, 'flat_books': None}
-    else:
-        paginator  = Paginator(qs, PAGE_SIZE)
-        flat_books = paginator.get_page(request.GET.get('page', 1))
-        return {'grouped_books': None, 'flat_books': flat_books}
+def _enrich_books(queryset):
+    """gradient و icon را به هر کتاب اضافه می‌کند — بدون templatetag."""
+    books = list(queryset)
+    for book in books:
+        idx = book.pk % len(GRADIENTS)
+        book.gradient = GRADIENTS[idx]
+        book.cover_icon = ICONS[idx % len(ICONS)]
+    return books
 
 
 def books_list(request):
-    """صفحه اصلی کتابخانه."""
-    categories = BookCategory.objects.filter(parent__isnull=True).order_by('order', 'name')
-    qs, q, selected_cat, selected_access, selected_sort = _apply_filters(request)
-    ctx = _build_context(request, qs, q, selected_cat, selected_access, selected_sort, categories)
+    """صفحه اصلی کتابخانه — گروه‌بندی بر اساس دسته‌بندی."""
+    categories = BookCategory.objects.filter(
+        parent__isnull=True
+    ).prefetch_related('books').order_by('order', 'name')
+
+    grouped = {}
+    for cat in categories:
+        books = _enrich_books(
+            Book.objects.filter(is_active=True, category=cat)
+            .select_related('category')
+            .order_by('-created_at')[:6]
+        )
+        if books:
+            grouped[cat] = books
 
     context = {
-        'categories':      categories,
-        'selected_cat':    selected_cat,
-        'selected_access': selected_access,
-        'selected_sort':   selected_sort,
-        'search_query':    q,
-        'active_menu':     'books',
-        **ctx,
+        'grouped_books': grouped,
+        'active_menu': 'books',
     }
     return render(request, 'books/books.html', context)
 
 
-def books_partial(request):
-    """HTMX endpoint — فقط partial برمی‌گرداند."""
-    categories = BookCategory.objects.filter(parent__isnull=True).order_by('order', 'name')
-    qs, q, selected_cat, selected_access, selected_sort = _apply_filters(request)
-    ctx = _build_context(request, qs, q, selected_cat, selected_access, selected_sort, categories)
-
-    return render(request, 'book/partials/books_list.html', {
-        **ctx,
-        'selected_sort': selected_sort,
-    })
-
-
 def books_by_category(request, slug):
-    """صفحه 'مشاهده همه' یک دسته."""
-    category   = get_object_or_404(BookCategory, slug=slug)
-    categories = BookCategory.objects.filter(parent__isnull=True).order_by('order', 'name')
+    """صفحه اختصاصی یک دسته‌بندی با pagination و فیلتر."""
+    category = get_object_or_404(BookCategory, slug=slug)
 
-    qs, q, selected_cat, selected_access, selected_sort = _apply_filters(request)
-    qs = qs.filter(category=category)
+    qs = Book.objects.filter(
+        is_active=True, category=category
+    ).select_related('category')
+
+    # فیلترها
+    q      = request.GET.get('q', '').strip()
+    access = request.GET.get('access', '').strip()
+    sort   = request.GET.get('sort', '-created_at').strip()
+
+    if q:
+        qs = qs.filter(title__icontains=q) | qs.filter(author__icontains=q)
+        qs = qs.distinct()
+    if access in ('free', 'paid', 'premium'):
+        qs = qs.filter(access_type=access)
+
+    ALLOWED = ('-created_at', '-views', '-rating', 'price', '-price')
+    if sort not in ALLOWED:
+        sort = '-created_at'
+    qs = qs.order_by(sort)
 
     paginator  = Paginator(qs, PAGE_SIZE)
-    flat_books = paginator.get_page(request.GET.get('page', 1))
+    page_obj   = paginator.get_page(request.GET.get('page', 1))
+    books      = _enrich_books(page_obj.object_list)
+    page_obj.enriched = books  # attach برای دسترسی در template
 
     context = {
-        'categories':       categories,
-        'grouped_books':    None,
-        'flat_books':       flat_books,
-        'current_category': category,
-        'selected_cat':     slug,
-        'selected_access':  selected_access,
-        'selected_sort':    selected_sort,
-        'search_query':     q,
-        'active_menu':      'books',
+        'category':        category,
+        'page_obj':        page_obj,
+        'books':           books,
+        'search_query':    q,
+        'selected_access': access,
+        'selected_sort':   sort,
+        'active_menu':     'books',
     }
-    return render(request, 'book/books.html', context)
+    return render(request, 'books/books_category.html', context)
 
 
 def book_detail(request, slug):
@@ -112,8 +107,12 @@ def book_detail(request, slug):
     book     = get_object_or_404(Book, slug=slug, is_active=True)
     chapters = book.chapters.prefetch_related('pages').order_by('order')
 
-    # ثبت بازدید بدون race condition
     Book.objects.filter(pk=book.pk).update(views=book.views + 1)
+
+    # gradient برای جلد
+    idx = book.pk % len(GRADIENTS)
+    book.gradient  = GRADIENTS[idx]
+    book.cover_icon = ICONS[idx % len(ICONS)]
 
     context = {
         'book':        book,
