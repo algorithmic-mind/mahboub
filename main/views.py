@@ -2,7 +2,10 @@
 from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Q
-from .models import SiteSettings, Slider, Banner, MenuItem
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.core.paginator import Paginator
+from .models import SiteSettings, Slider, Banner, MenuItem, FAQ, GuideCategory,GuideArticle,SupportTicket
 from book.models import Book, BookCategory  # Assuming books app
 from podcast.models import Podcast, PodcastCategory  # Assuming podcasts app
 from course.models import Course, CourseCategory  # Assuming courses app
@@ -106,3 +109,118 @@ def ajax_courses(request):
         category = get_object_or_404(CourseCategory, slug=category_slug)
         courses = Course.objects.filter(category=category, is_featured=True, is_active=True)[:10]
     return render(request, 'main/partials/courses_row.html', {'featured_courses': courses})
+
+
+def support_home(request):
+    """صفحه اصلی راهنما و پشتیبانی"""
+    context = {
+        'active_menu': 'support',
+        'faqs': FAQ.objects.filter(is_active=True)[:6],
+        'guide_categories': GuideCategory.objects.filter(is_active=True).order_by('order')[:4],
+        'popular_articles': GuideArticle.objects.filter(is_active=True, is_popular=True)[:5],
+        'support_email': 'support@mahboob.ir',
+        'support_phone': '۰۲۱-۱۲۳۴۵۶۷۸',
+        'support_hours': '۹ صبح تا ۹ شب (۷ روز هفته)',
+    }
+    return render(request, 'support/support.html', context)
+
+
+def faq_list(request):
+    """لیست سوالات متداول"""
+    faqs = FAQ.objects.filter(is_active=True).order_by('order')
+    
+    # دسته‌بندی سوالات
+    categories = FAQ.objects.values_list('category', flat=True).distinct()
+    
+    paginator = Paginator(faqs, 20)
+    page = request.GET.get('page', 1)
+    faqs_page = paginator.get_page(page)
+    
+    context = {
+        'active_menu': 'support',
+        'faqs': faqs_page,
+        'categories': categories,
+    }
+    return render(request, 'main/support.html', context)
+
+
+def guide_category(request, slug):
+    """نمایش مقالات یک دسته راهنما"""
+    category = get_object_or_404(GuideCategory, slug=slug, is_active=True)
+    articles = GuideArticle.objects.filter(category=category, is_active=True).order_by('-created_at')
+    
+    context = {
+        'active_menu': 'support',
+        'category': category,
+        'articles': articles,
+    }
+    return render(request, 'support/guide_category.html', context)
+
+
+def guide_article(request, slug):
+    """نمایش مقاله راهنما"""
+    article = get_object_or_404(GuideArticle, slug=slug, is_active=True)
+    
+    # افزایش بازدید
+    GuideArticle.objects.filter(pk=article.pk).update(views=article.views + 1)
+    
+    context = {
+        'active_menu': 'support',
+        'article': article,
+    }
+    return render(request, 'support/guide_article.html', context)
+
+
+
+
+def create_ticket(request):
+    """ایجاد تیکت پشتیبانی"""
+    if request.method == 'POST':
+        try:
+            # دریافت داده‌ها از فرم
+            fullname = request.POST.get('fullname', '').strip()
+            email = request.POST.get('email', '').strip()
+            category = request.POST.get('category', '').strip()
+            subject = request.POST.get('subject', '').strip()
+            message = request.POST.get('message', '').strip()
+            
+            # اعتبارسنجی
+            if not all([fullname, email, category, subject, message]):
+                return render(request, 'main/support.html', {
+                    'form_errors': 'لطفاً تمام فیلدها را پر کنید'
+                })
+            
+            # ایجاد تیکت
+            ticket = SupportTicket.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                email=email,
+                fullname=fullname,
+                category=category,
+                subject=subject,
+                message=message,
+                status='pending'
+            )
+            
+            messages.success(request, 'درخواست شما با موفقیت ثبت شد. به زودی پاسخگوی شما خواهیم بود.')
+            return redirect('main:faq')
+            
+        except Exception as e:
+            return render(request, 'main/support.html', {
+                'form_errors': f'خطا در ثبت درخواست: {str(e)}'
+            })
+    
+    return redirect('main:faq')
+
+
+def contact_support(request):
+    """تماس با پشتیبانی"""
+    context = {
+        'active_menu': 'support',
+        'support_email': 'support@mahboob.ir',
+        'support_phone': '۰۲۱-۱۲۳۴۵۶۷۸',
+        'support_telegram': '@mahboob_support',
+        'support_instagram': '@mahboob_app',
+        'support_hours': '۹ صبح تا ۹ شب',
+        'response_time': '۲۴ ساعت',
+    }
+    return render(request, 'support/contact.html', context)

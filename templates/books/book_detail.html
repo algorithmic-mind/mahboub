@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} | کتابخانه محبوب{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/book-detail.css' %}">
+<style>
+    /* استایل‌های اضافی برای تطابق با book-detail.html */
+    .back-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1.5px solid var(--gray-300);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .back-button:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: scale(1.05);
+    }
+    
+    .share-toggle {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1.5px solid var(--gray-300);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    
+    .share-toggle:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Book Header -->
+<div class="book-detail-header">
+    <div class="book-detail-cover">
+        {% if book.cover_image %}
+        <div class="book-detail-image" style="background: #f5f5f5;">
+            <img src="{{ book.cover_image.url }}" 
+                 alt="{{ book.title }}"
+                 style="width:100%;height:100%;object-fit:cover;border-radius:16px;">
+        </div>
+        {% else %}
+        <div class="book-detail-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="fas fa-{% cycle 'quran' 'book-quran' 'mosque' 'book-open' %}"></i>
+        </div>
+        {% endif %}
+    </div>
+    <div class="book-detail-info">
+        <h1 class="book-detail-title">{{ book.title }}</h1>
+        <p class="book-detail-author">
+            <i class="fas fa-user-edit"></i>
+            {{ book.author }}{% if book.translator %} | مترجم: {{ book.translator }}{% endif %}
+        </p>
+        <div class="book-detail-meta">
+            {% if book.rating > 0 %}
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span>{{ book.rating }} ({{ book.views|default:'۰' }} بازدید)</span>
+            </div>
+            {% endif %}
+            <div class="meta-item">
+                <i class="fas fa-file-alt"></i>
+                <span>{{ book.total_pages }} صفحه</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-language"></i>
+                <span>{{ book.language|default:'فارسی' }}</span>
+            </div>
+            {% if book.publisher %}
+            <div class="meta-item">
+                <i class="fas fa-building"></i>
+                <span>{{ book.publisher }}</span>
+            </div>
+            {% endif %}
+            {% if book.publish_year %}
+            <div class="meta-item">
+                <i class="fas fa-calendar"></i>
+                <span>{{ book.publish_year }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <button class="quick-action-btn" id="bookmarkBtn">
+        <i class="far fa-bookmark"></i>
+        <span>نشان کردن</span>
+    </button>
+    <button class="quick-action-btn" id="downloadBtn">
+        <i class="fas fa-download"></i>
+        <span>دانلود</span>
+    </button>
+    <button class="quick-action-btn" id="shareBtn">
+        <i class="fas fa-share-nodes"></i>
+        <span>اشتراک‌گذاری</span>
+    </button>
+</div>
+
+<!-- Book Description -->
+{% if book.description %}
+<div class="content-section">
+    <h2 class="section-title">
+        <i class="fas fa-align-right"></i>
+        درباره کتاب
+    </h2>
+    <div class="book-description">
+        {{ book.description|linebreaks }}
+    </div>
+</div>
+{% endif %}
+
+<!-- Book Features -->
+<div class="content-section">
+    <h2 class="section-title">
+        <i class="fas fa-star"></i>
+        ویژگی‌های کتاب
+    </h2>
+    <div class="features-grid">
+        <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <div class="feature-title">نسخه کامل</div>
+                <div class="feature-desc">جلد {{ book.volume }}</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-mobile-alt"></i>
+            <div>
+                <div class="feature-title">خواندن آفلاین</div>
+                <div class="feature-desc">بدون نیاز به اینترنت</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-bookmark"></i>
+            <div>
+                <div class="feature-title">نشانه‌گذاری</div>
+                <div class="feature-desc">ذخیره صفحات مهم</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-search"></i>
+            <div>
+                <div class="feature-title">جستجوی پیشرفته</div>
+                <div class="feature-desc">در کل متن کتاب</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-paint-brush"></i>
+            <div>
+                <div class="feature-title">هایلایت متن</div>
+                <div class="feature-desc">علامت‌گذاری بخش‌ها</div>
+            </div>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-font"></i>
+            <div>
+                <div class="feature-title">تنظیم فونت</div>
+                <div class="feature-desc">اندازه و نوع قلم</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of Contents -->
+{% if chapters %}
+<div class="content-section">
+    <h2 class="section-title">
+        <i class="fas fa-list"></i>
+        فهرست مطالب ({{ chapters|length }} فصل)
+    </h2>
+    <div class="toc-list">
+        {% for chapter in chapters %}
+        <div class="toc-item {% if chapter.is_preview %}preview{% endif %}">
+            <span class="toc-number">{{ forloop.counter }}</span>
+            <span class="toc-title">{{ chapter.title }}</span>
+            
+            <span class="toc-pages"><small>{{ chapter.pages_count }} صفحه</small></span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Reviews Section (نمونه استاتیک برای فعلاً) -->
+<div class="content-section">
+    <h2 class="section-title">
+        <i class="fas fa-comments"></i>
+        نظرات کاربران
+    </h2>
+    <div class="reviews-summary">
+        <div class="rating-score">
+            <div class="score-number">{{ book.rating|default:'۴.۸' }}</div>
+            <div class="score-stars">
+                {% with rating=book.rating|default:4.8 %}
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= rating %}
+                            <i class="fas fa-star"></i>
+                        {% elif forloop.counter <= rating|add:0.5 %}
+                            <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            <div class="score-count">از {{ book.views|default:'۲۳۴' }} نظر</div>
+        </div>
+        <div class="rating-bars">
+            <div class="rating-bar">
+                <span>۵</span>
+                <div class="bar"><div class="bar-fill" style="width: 75%;"></div></div>
+                <span>۱۷۵</span>
+            </div>
+            <div class="rating-bar">
+                <span>۴</span>
+                <div class="bar"><div class="bar-fill" style="width: 15%;"></div></div>
+                <span>۳۵</span>
+            </div>
+            <div class="rating-bar">
+                <span>۳</span>
+                <div class="bar"><div class="bar-fill" style="width: 7%;"></div></div>
+                <span>۱۶</span>
+            </div>
+            <div class="rating-bar">
+                <span>۲</span>
+                <div class="bar"><div class="bar-fill" style="width: 2%;"></div></div>
+                <span>۵</span>
+            </div>
+            <div class="rating-bar">
+                <span>۱</span>
+                <div class="bar"><div class="bar-fill" style="width: 1%;"></div></div>
+                <span>۳</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="reviews-list">
+        <div class="review-item">
+            <div class="review-header">
+                <div class="review-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span>کاربر ناشناس</span>
+                </div>
+                <div class="review-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <p class="review-text">تفسیری بسیار عمیق و جامع. برای کسانی که می‌خواهند قرآن را عمیق‌تر بفهمند، بسیار مناسب است.</p>
+            <div class="review-date">۲ هفته پیش</div>
+        </div>
+
+        <div class="review-item">
+            <div class="review-header">
+                <div class="review-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span>فاطمه احمدی</span>
+                </div>
+                <div class="review-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <p class="review-text">کیفیت نسخه دیجیتال عالی است. امکانات خواندن و جستجو بسیار کاربردی هستند.</p>
+            <div class="review-date">۱ ماه پیش</div>
+        </div>
+    </div>
+</div>
+
+<!-- Purchase Bar - اضافه شده مشابه فایل قبلی -->
+<div class="purchase-bar">
+    <div class="purchase-content">
+        <div class="purchase-price">
+            {% if book.access_type == 'free' %}
+                <div class="current-price">رایگان</div>
+            {% else %}
+                {% if book.discount_percent > 0 %}
+                <div class="original-price">{{ book.price|floatformat:0 }} تومان</div>
+                <div class="current-price">{{ book.final_price|floatformat:0 }} تومان</div>
+                {% else %}
+                <div class="current-price">{{ book.price|floatformat:0 }} تومان</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="purchase-actions">
+            {% if book.access_type == 'free' %}
+            <button class="btn btn-primary" id="readBookBtn">
+                <i class="fas fa-book-open"></i>
+                مطالعه کتاب
+            </button>
+            {% else %}
+            <button class="btn btn-primary" id="purchaseBtn">
+                <i class="fas fa-shopping-cart"></i>
+                خرید کتاب
+            </button>
+            <button class="btn btn-secondary" id="previewBtn">
+                <i class="fas fa-eye"></i>
+                مطالعه نمونه
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/book-detail.js' %}"></script>
+
+{% endblock %}

@@ -120,4 +120,4 @@ def book_detail(request, slug):
         'chapters':    chapters,
         'active_menu': 'books',
     }
-    return render(request, 'book/book_detail.html', context)
+    return render(request, 'books/book_detail.html', context)

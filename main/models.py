@@ -171,3 +171,142 @@ class MenuItem(models.Model):
 
     def __str__(self):
         return f"[{self.get_location_display()}] {self.label}"
+    
+    # support/models.py
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class FAQ(models.Model):
+    """سوالات متداول"""
+    question = models.CharField(max_length=255, verbose_name="سوال")
+    answer = models.TextField(verbose_name="پاسخ")
+    category = models.CharField(max_length=50, verbose_name="دسته‌بندی", blank=True)
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب")
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    views = models.PositiveIntegerField(default=0, verbose_name="تعداد بازدید")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "سوال متداول"
+        verbose_name_plural = "سوالات متداول"
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.question
+
+
+class GuideCategory(models.Model):
+    """دسته‌بندی مقالات راهنما"""
+    name = models.CharField(max_length=100, verbose_name="نام دسته")
+    slug = models.SlugField(unique=True, allow_unicode=True, verbose_name="اسلاگ")
+    description = models.TextField(blank=True, verbose_name="توضیحات")
+    icon = models.CharField(max_length=50, blank=True, verbose_name="آیکون (Font Awesome)")
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="ترتیب")
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "دسته راهنما"
+        verbose_name_plural = "دسته‌های راهنما"
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+    
+    def article_count(self):
+        return self.articles.filter(is_active=True).count()
+
+
+class GuideArticle(models.Model):
+    """مقالات راهنمای استفاده از سایت"""
+    category = models.ForeignKey(
+        GuideCategory, on_delete=models.CASCADE,
+        related_name='articles', verbose_name="دسته"
+    )
+    title = models.CharField(max_length=255, verbose_name="عنوان")
+    slug = models.SlugField(unique=True, allow_unicode=True, verbose_name="اسلاگ")
+    summary = models.TextField(verbose_name="خلاصه", blank=True)
+    content = models.TextField(verbose_name="محتوا")
+    image = models.ImageField(upload_to='support/guides/', blank=True, verbose_name="تصویر")
+    is_popular = models.BooleanField(default=False, verbose_name="محبوب")
+    views = models.PositiveIntegerField(default=0, verbose_name="بازدید")
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "مقاله راهنما"
+        verbose_name_plural = "مقالات راهنما"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class SupportTicket(models.Model):
+    """تیکت‌های پشتیبانی"""
+    
+    CATEGORY_CHOICES = [
+        ('technical', 'مشکل فنی'),
+        ('financial', 'مسائل مالی'),
+        ('content', 'مشکل محتوا'),
+        ('account', 'حساب کاربری'),
+        ('suggestion', 'پیشنهاد'),
+        ('other', 'سایر موارد'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'در انتظار بررسی'),
+        ('processing', 'در حال بررسی'),
+        ('answered', 'پاسخ داده شده'),
+        ('closed', 'بسته شده'),
+    ]
+    
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='support_tickets',
+        verbose_name="کاربر"
+    )
+    fullname = models.CharField(max_length=255, verbose_name="نام و نام خانوادگی", default="")
+    email = models.EmailField(verbose_name="ایمیل")
+    subject = models.CharField(max_length=255, verbose_name="موضوع")
+    message = models.TextField(verbose_name="پیام")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="دسته")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="وضعیت")
+    file = models.FileField(upload_to='support/tickets/', blank=True, verbose_name="فایل پیوست")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "تیکت پشتیبانی"
+        verbose_name_plural = "تیکت‌های پشتیبانی"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"تیکت #{self.id} - {self.subject}"
+
+
+class SupportTicketReply(models.Model):
+    """پاسخ‌های تیکت"""
+    ticket = models.ForeignKey(
+        SupportTicket, on_delete=models.CASCADE,
+        related_name='replies', verbose_name="تیکت"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True, verbose_name="کاربر"
+    )
+    message = models.TextField(verbose_name="پاسخ")
+    is_staff = models.BooleanField(default=False, verbose_name="پاسخ اپراتور")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "پاسخ تیکت"
+        verbose_name_plural = "پاسخ‌های تیکت"
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"پاسخ به تیکت #{self.ticket.id}"

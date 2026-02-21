@@ -1,0 +1,574 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}راهنما و پشتیبانی | سامانه جامع محبوب{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* استایل‌های صفحه پشتیبانی */
+    .support-header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 30px 20px;
+        border-radius: var(--radius-xl);
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .support-header i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .support-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .support-header p {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    /* بخش‌های مختلف */
+    .section-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-200);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 20px;
+    }
+
+    /* روش‌های ارتباطی */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .contact-item {
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        padding: 15px;
+        text-align: center;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s;
+    }
+
+    .contact-item:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    .contact-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        color: white;
+        font-size: 20px;
+    }
+
+    .contact-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+
+    .contact-value {
+        font-size: 13px;
+        color: var(--primary);
+        font-weight: 500;
+        direction: ltr;
+    }
+
+    .contact-note {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+    }
+
+    /* سوالات متداول */
+    .faq-item {
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .faq-question {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        background: var(--card-bg);
+    }
+
+    .faq-question i:first-child {
+        color: var(--primary);
+        font-size: 16px;
+    }
+
+    .faq-question span {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .faq-question .toggle-icon {
+        color: var(--primary);
+        transition: transform 0.3s;
+    }
+
+    .faq-item.active .toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        padding: 0 15px 15px 41px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        display: none;
+    }
+
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+
+    /* فرم تماس */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        font-family: 'Vazirmatn';
+        font-size: 13px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(246, 91, 91, 0.1);
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: left 12px center;
+        background-size: 16px;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 15px;
+        font-weight: 600;
+        font-family: 'Vazirmatn';
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* اطلاعات اضافه */
+    .info-box {
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        padding: 15px;
+        margin-top: 20px;
+        text-align: center;
+        border: 1px solid var(--gray-200);
+    }
+
+    .info-box i {
+        font-size: 24px;
+        color: var(--primary);
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .info-box .hours {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 5px;
+    }
+
+    .info-box .response-time {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 20px;
+        text-align: center;
+        border: 1px solid #c3e6cb;
+    }
+
+    [data-theme="dark"] .success-message {
+        background: #1e3a2a;
+        color: #d4edda;
+        border-color: #2d5a3a;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 20px;
+        text-align: center;
+        border: 1px solid #f5c6cb;
+    }
+
+    [data-theme="dark"] .error-message {
+        background: #3e1e22;
+        color: #f8d7da;
+        border-color: #5a2a30;
+    }
+
+    @media (max-width: 480px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- هدر صفحه -->
+<div class="support-header slide-up">
+    <i class="fas fa-headset"></i>
+    <h1>راهنما و پشتیبانی</h1>
+    <p>پاسخگوی سوالات و مشکلات شما هستیم</p>
+</div>
+
+<!-- نمایش پیام موفقیت (در صورت وجود) -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="success-message slide-up">
+            <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- نمایش خطاها -->
+{% if form_errors %}
+    <div class="error-message slide-up">
+        <i class="fas fa-exclamation-circle" style="margin-left: 8px;"></i>
+        {{ form_errors }}
+    </div>
+{% endif %}
+
+<!-- روش‌های ارتباطی -->
+<div class="section-card slide-up" style="animation-delay: 50ms;">
+    <div class="section-title">
+        <i class="fas fa-phone-alt"></i>
+        روش‌های ارتباطی
+    </div>
+    
+    <div class="contact-grid">
+        <div class="contact-item">
+            <div class="contact-icon">
+                <i class="fas fa-phone"></i>
+            </div>
+            <div class="contact-title">تلفن پشتیبانی</div>
+            <div class="contact-value">۰۲۱-۱۲۳۴۵۶۷۸</div>
+            <div class="contact-note">۹ صبح تا ۹ شب</div>
+        </div>
+
+        <div class="contact-item">
+            <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="contact-title">ایمیل</div>
+            <div class="contact-value">support@mahboob.ir</div>
+            <div class="contact-note">پاسخگویی ۲۴ ساعته</div>
+        </div>
+
+        <div class="contact-item">
+            <div class="contact-icon">
+                <i class="fab fa-telegram"></i>
+            </div>
+            <div class="contact-title">تلگرام</div>
+            <div class="contact-value">@mahboob_support</div>
+            <div class="contact-note">پشتیبانی متنی</div>
+        </div>
+
+        <div class="contact-item">
+            <div class="contact-icon">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="contact-title">واتساپ</div>
+            <div class="contact-value">۰۹۱۲۳۴۵۶۷۸۹</div>
+            <div class="contact-note">پاسخگویی فوری</div>
+        </div>
+    </div>
+</div>
+
+<!-- سوالات متداول -->
+<div class="section-card slide-up" style="animation-delay: 100ms;">
+    <div class="section-title">
+        <i class="fas fa-question-circle"></i>
+        سوالات متداول
+    </div>
+    
+    <div class="faq-list">
+        <div class="faq-item active">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>چگونه می‌توانم کتاب خریداری کنم؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                برای خرید کتاب، ابتدا وارد حساب کاربری خود شوید. سپس کتاب مورد نظر را انتخاب کرده و روی دکمه "خرید" کلیک کنید. پس از تکمیل اطلاعات و پرداخت آنلاین، کتاب به کتابخانه شما اضافه خواهد شد.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>چگونه می‌توانم کتاب‌های خریداری شده را مطالعه کنم؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                پس از خرید، به بخش "کتابخانه من" مراجعه کنید. لیست کتاب‌های خریداری شده را مشاهده می‌کنید. با کلیک روی هر کتاب، وارد صفحه مطالعه می‌شوید و می‌توانید به صورت آنلاین یا آفلاین مطالعه کنید.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>مدت زمان پاسخگویی به تیکت‌ها چقدر است؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                تیم پشتیبانی ما در اسرع وقت (حداکثر ۲۴ ساعت) به تیکت‌های شما پاسخ می‌دهد. در روزهای تعطیل، این زمان ممکن است تا ۴۸ ساعت افزایش یابد.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>آیا امکان دانلود کتاب‌ها وجود دارد؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                بله، برای کتاب‌های خریداری شده، امکان دانلود در اپلیکیشن موبایل وجود دارد. در نسخه وب، می‌توانید به صورت آنلاین مطالعه کنید و در اپلیکیشن، کتاب‌ها برای مطالعه آفلاین در دسترس هستند.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>چگونه می‌توانم اشتراک ویژه تهیه کنم؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                برای تهیه اشتراک ویژه، به بخش "اشتراک‌ها" در پروفایل کاربری خود مراجعه کنید. می‌توانید اشتراک ماهانه، ۳ ماهه یا سالانه را انتخاب کرده و با پرداخت آنلاین، از محتوای ویژه استفاده کنید.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <i class="fas fa-question"></i>
+                <span>در صورت مشکل در پرداخت چه کنم؟</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                اگر در فرآیند پرداخت با مشکل مواجه شدید، ابتدا از کافی بودن موجودی و درست بودن اطلاعات کارت اطمینان حاصل کنید. در صورت تداوم مشکل، از طریق فرم زیر تیکت ثبت کنید یا با پشتیبانی تماس بگیرید.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- فرم ارسال درخواست/تیکت -->
+<div class="section-card slide-up" style="animation-delay: 150ms;">
+    <div class="section-title">
+        <i class="fas fa-ticket-alt"></i>
+        ارسال درخواست پشتیبانی
+    </div>
+    
+    <form method="post" action="{% url 'main:create_ticket' %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label">نام و نام خانوادگی</label>
+            <input type="text" class="form-control" name="fullname" placeholder="نام خود را وارد کنید" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">ایمیل</label>
+            <input type="email" class="form-control" name="email" placeholder="example@email.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">دسته‌بندی</label>
+            <select class="form-control" name="category" required>
+                <option value="">انتخاب کنید</option>
+                <option value="technical">مشکل فنی</option>
+                <option value="financial">مسائل مالی</option>
+                <option value="content">مشکل محتوا</option>
+                <option value="account">حساب کاربری</option>
+                <option value="suggestion">پیشنهاد</option>
+                <option value="other">سایر موارد</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">موضوع</label>
+            <input type="text" class="form-control" name="subject" placeholder="موضوع درخواست" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">پیام</label>
+            <textarea class="form-control" name="message" placeholder="توضیحات خود را وارد کنید..." required></textarea>
+        </div>
+        
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-paper-plane"></i>
+            ارسال درخواست
+        </button>
+    </form>
+</div>
+
+<!-- اطلاعات تکمیلی -->
+<div class="info-box slide-up" style="animation-delay: 200ms;">
+    <i class="fas fa-clock"></i>
+    <div class="hours">ساعات پاسخگویی: ۹ صبح تا ۹ شب (۷ روز هفته)</div>
+    <div class="response-time">زمان پاسخگویی: حداکثر ۲۴ ساعت</div>
+</div>
+
+<!-- نماد اعتماد و امنیت -->
+<div class="section-card slide-up" style="animation-delay: 250ms; text-align: center;">
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <div>
+            <i class="fas fa-shield-alt" style="font-size: 32px; color: var(--primary); margin-bottom: 5px; display: block;"></i>
+            <span style="font-size: 12px; color: var(--text-secondary);">پرداخت امن</span>
+        </div>
+        <div>
+            <i class="fas fa-lock" style="font-size: 32px; color: var(--primary); margin-bottom: 5px; display: block;"></i>
+            <span style="font-size: 12px; color: var(--text-secondary);">اطلاعات محرمانه</span>
+        </div>
+        <div>
+            <i class="fas fa-headset" style="font-size: 32px; color: var(--primary); margin-bottom: 5px; display: block;"></i>
+            <span style="font-size: 12px; color: var(--text-secondary);">پشتیبانی ۲۴/۷</span>
+        </div>
+    </div>
+</div>
+
+<!-- لینک بازگشت به صفحه اصلی -->
+<div style="text-align: center; margin: 20px 0;">
+    <a href="{% url 'main:main' %}" style="color: var(--primary); text-decoration: none; font-size: 13px;">
+        <i class="fas fa-arrow-right"></i>
+        بازگشت به صفحه اصلی
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تابع باز و بسته کردن سوالات متداول
+    function toggleFaq(element) {
+        const faqItem = element.closest('.faq-item');
+        faqItem.classList.toggle('active');
+    }
+
+    // باز کردن اولین سوال به طور پیش‌فرض (اگر بسته باشد)
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstFaq = document.querySelector('.faq-item');
+        if (firstFaq && !firstFaq.classList.contains('active')) {
+            firstFaq.classList.add('active');
+        }
+    });
+
+    // اعتبارسنجی ساده فرم
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const fullname = form.querySelector('[name="fullname"]').value.trim();
+            const email = form.querySelector('[name="email"]').value.trim();
+            const category = form.querySelector('[name="category"]').value;
+            const subject = form.querySelector('[name="subject"]').value.trim();
+            const message = form.querySelector('[name="message"]').value.trim();
+            
+            if (!fullname || !email || !category || !subject || !message) {
+                e.preventDefault();
+                alert('لطفاً تمام فیلدها را پر کنید');
+                return;
+            }
+            
+            if (email && !email.includes('@')) {
+                e.preventDefault();
+                alert('لطفاً یک ایمیل معتبر وارد کنید');
+                return;
+            }
+        });
+    }
+</script>
+{% endblock %}

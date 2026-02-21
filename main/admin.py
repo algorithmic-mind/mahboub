@@ -250,3 +250,216 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(
             reverse('admin:main_sitesettings_change', args=[obj.pk])
         )
+    
+
+
+from django.urls import reverse
+from .models import FAQ, GuideCategory, GuideArticle, SupportTicket, SupportTicketReply
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ['question', 'category', 'views', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active', 'category', 'created_at']
+    search_fields = ['question', 'answer']
+    ordering = ['order', '-created_at']
+    list_editable = ['order', 'is_active']
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('question', 'answer', 'category')
+        }),
+        ('تنظیمات', {
+            'fields': ('order', 'is_active', 'views')
+        }),
+    )
+    readonly_fields = ['views']
+
+
+class SupportTicketReplyInline(admin.TabularInline):
+    model = SupportTicketReply
+    extra = 0
+    fields = ['user', 'message', 'is_staff', 'created_at']
+    readonly_fields = ['created_at']
+
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ['id', 'subject_preview', 'fullname', 'email', 'category_badge', 'status_badge', 'created_at', 'last_activity']
+    list_filter = ['status', 'category', 'created_at']
+    search_fields = ['subject', 'message', 'fullname', 'email']
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at', 'updated_at', 'ticket_id_display']
+    inlines = [SupportTicketReplyInline]
+    
+    fieldsets = (
+        ('اطلاعات کاربر', {
+            'fields': ('fullname', 'email', 'user')
+        }),
+        ('جزئیات تیکت', {
+            'fields': ('ticket_id_display', 'category', 'subject', 'message')
+        }),
+        ('وضعیت', {
+            'fields': ('status', 'file', 'created_at', 'updated_at')
+        }),
+    )
+    
+    actions = ['mark_as_pending', 'mark_as_processing', 'mark_as_answered', 'mark_as_closed', 'send_reply_email']
+    
+    def subject_preview(self, obj):
+        return obj.subject[:50] + '...' if len(obj.subject) > 50 else obj.subject
+    subject_preview.short_description = "موضوع"
+    subject_preview.admin_order_field = 'subject'
+    
+    def ticket_id_display(self, obj):
+        return format_html('<strong>#{}</strong>', obj.id)
+    ticket_id_display.short_description = "شماره تیکت"
+    
+    def category_badge(self, obj):
+        colors = {
+            'technical': 'primary',
+            'financial': 'success',
+            'content': 'info',
+            'account': 'warning',
+            'suggestion': 'secondary',
+            'other': 'dark'
+        }
+        color = colors.get(obj.category, 'secondary')
+        return format_html(
+            '<span style="background-color: var(--{}); color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">{}</span>',
+            color,
+            obj.get_category_display()
+        )
+    category_badge.short_description = "دسته‌بندی"
+    
+    def status_badge(self, obj):
+        colors = {
+            'pending': 'warning',
+            'processing': 'info',
+            'answered': 'success',
+            'closed': 'secondary'
+        }
+        color = colors.get(obj.status, 'secondary')
+        return format_html(
+            '<span style="background-color: var(--{}); color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    status_badge.short_description = "وضعیت"
+    
+    def last_activity(self, obj):
+        if obj.replies.exists():
+            last_reply = obj.replies.latest('created_at')
+            return last_reply.created_at
+        return obj.created_at
+    last_activity.short_description = "آخرین فعالیت"
+    last_activity.admin_order_field = 'updated_at'
+    
+    def mark_as_pending(self, request, queryset):
+        queryset.update(status='pending')
+        self.message_user(request, f"{queryset.count()} تیکت به وضعیت 'در انتظار بررسی' تغییر یافت.")
+    mark_as_pending.short_description = "تغییر وضعیت به 'در انتظار بررسی'"
+    
+    def mark_as_processing(self, request, queryset):
+        queryset.update(status='processing')
+        self.message_user(request, f"{queryset.count()} تیکت به وضعیت 'در حال بررسی' تغییر یافت.")
+    mark_as_processing.short_description = "تغییر وضعیت به 'در حال بررسی'"
+    
+    def mark_as_answered(self, request, queryset):
+        queryset.update(status='answered')
+        self.message_user(request, f"{queryset.count()} تیکت به وضعیت 'پاسخ داده شده' تغییر یافت.")
+    mark_as_answered.short_description = "تغییر وضعیت به 'پاسخ داده شده'"
+    
+    def mark_as_closed(self, request, queryset):
+        queryset.update(status='closed')
+        self.message_user(request, f"{queryset.count()} تیکت به وضعیت 'بسته شده' تغییر یافت.")
+    mark_as_closed.short_description = "تغییر وضعیت به 'بسته شده'"
+    
+    def send_reply_email(self, request, queryset):
+        # این اکشن می‌تواند برای ارسال ایمیل به کاربر استفاده شود
+        for ticket in queryset:
+            # منطق ارسال ایمیل
+            pass
+        self.message_user(request, f"ایمیل برای {queryset.count()} تیکت ارسال شد.")
+    send_reply_email.short_description = "ارسال ایمیل به کاربر"
+
+
+@admin.register(GuideCategory)
+class GuideCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'icon_display', 'article_count', 'order', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['name', 'description']
+    ordering = ['order', 'name']
+    list_editable = ['order', 'is_active']
+    prepopulated_fields = {'slug': ('name',)}
+    
+    def icon_display(self, obj):
+        if obj.icon:
+            return format_html('<i class="{}" style="font-size: 16px;"></i>', obj.icon)
+        return "-"
+    icon_display.short_description = "آیکون"
+    
+    def article_count(self, obj):
+        count = obj.articles.filter(is_active=True).count()
+        url = reverse('admin:support_guidearticle_changelist') + f'?category__id__exact={obj.id}'
+        return format_html('<a href="{}">{}</a>', url, count)
+    article_count.short_description = "تعداد مقالات"
+
+
+@admin.register(GuideArticle)
+class GuideArticleAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'views', 'is_popular', 'is_active', 'created_at']
+    list_filter = ['category', 'is_popular', 'is_active', 'created_at']
+    search_fields = ['title', 'summary', 'content']
+    ordering = ['-created_at']
+    list_editable = ['is_popular', 'is_active']
+    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['views']
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('category', 'title', 'slug', 'summary')
+        }),
+        ('محتوای اصلی', {
+            'fields': ('content', 'image')
+        }),
+        ('تنظیمات', {
+            'fields': ('is_popular', 'is_active', 'views')
+        }),
+    )
+    
+    actions = ['mark_as_popular', 'mark_as_not_popular']
+    
+    def mark_as_popular(self, request, queryset):
+        queryset.update(is_popular=True)
+        self.message_user(request, f"{queryset.count()} مقاله به عنوان 'محبوب' علامت‌گذاری شد.")
+    mark_as_popular.short_description = "علامت‌گذاری به عنوان محبوب"
+    
+    def mark_as_not_popular(self, request, queryset):
+        queryset.update(is_popular=False)
+        self.message_user(request, f"علامت 'محبوب' از {queryset.count()} مقاله برداشته شد.")
+    mark_as_not_popular.short_description = "برداشتن علامت محبوب"
+
+
+@admin.register(SupportTicketReply)
+class SupportTicketReplyAdmin(admin.ModelAdmin):
+    list_display = ['id', 'ticket_link', 'user_info', 'message_preview', 'is_staff', 'created_at']
+    list_filter = ['is_staff', 'created_at']
+    search_fields = ['message', 'ticket__subject', 'user__username']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
+    
+    def ticket_link(self, obj):
+        url = reverse('admin:support_supportticket_change', args=[obj.ticket.id])
+        return format_html('<a href="{}">تیکت #{}</a>', url, obj.ticket.id)
+    ticket_link.short_description = "تیکت"
+    
+    def user_info(self, obj):
+        if obj.user:
+            if obj.user.get_full_name():
+                return obj.user.get_full_name()
+            return obj.user.username
+        return obj.ticket.fullname
+    user_info.short_description = "کاربر"
+    
+    def message_preview(self, obj):
+        return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
+    message_preview.short_description = "پیام"
