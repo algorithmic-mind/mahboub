@@ -448,6 +448,7 @@
 </div>
 
 <!-- فرم ارسال درخواست/تیکت -->
+
 <div class="section-card slide-up" style="animation-delay: 150ms;">
     <div class="section-title">
         <i class="fas fa-ticket-alt"></i>
@@ -457,15 +458,29 @@
     <form method="post" action="{% url 'main:create_ticket' %}">
         {% csrf_token %}
         
+         {% if request.user.is_authenticated %}
         <div class="form-group">
             <label class="form-label">نام و نام خانوادگی</label>
-            <input type="text" class="form-control" name="fullname" placeholder="نام خود را وارد کنید" required>
+            <input type="text" class="form-control" value="{{request.user.first_name}} {{request.user.last_name}}" name="fullname" placeholder="نام خود را وارد کنید" disabled >
         </div>
         
         <div class="form-group">
-            <label class="form-label">ایمیل</label>
-            <input type="email" class="form-control" name="email" placeholder="example@email.com" required>
+            <label class="form-label">موبایل</label>
+            <input type="text" class="form-control" value="{{request.user}}" name="email" placeholder="0912456789" disabled>
         </div>
+        {% else %}
+
+         <div class="form-group">
+            <label class="form-label">نام و نام خانوادگی</label>
+            <input type="text" class="form-control"  {{request.user.last_name}}" name="fullname" placeholder="نام خود را وارد کنید" required >
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">موبایل</label>
+            <input type="text" class="form-control" name="email" placeholder="0912456789" required>
+        </div>
+
+        {% endif %}
         
         <div class="form-group">
             <label class="form-label">دسته‌بندی</label>
@@ -496,6 +511,7 @@
         </button>
     </form>
 </div>
+
 
 <!-- اطلاعات تکمیلی -->
 <div class="info-box slide-up" style="animation-delay: 200ms;">
