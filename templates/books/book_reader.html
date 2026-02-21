@@ -5,6 +5,30 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/book-reader.css' %}">
+<style>
+/* ── واترمارک شماره موبایل ─────────────────────────────── */
+.wm-container {
+    pointer-events: none;
+    user-select: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+.wm {
+    position: absolute;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    opacity: 0.07;
+    white-space: nowrap;
+    letter-spacing: 2px;
+    transform: rotate(-35deg);
+}
+.wm-1 { top: 20%;  left: 50%; transform: translate(-50%, 0) rotate(-35deg); }
+.wm-2 { top: 48%;  left: 50%; transform: translate(-50%, 0) rotate(-35deg); }
+.wm-3 { top: 75%;  left: 50%; transform: translate(-50%, 0) rotate(-35deg); }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -35,7 +59,12 @@
 
 <!-- Reader Content -->
 <main class="reader-content" id="readerContent">
-    <div class="watermark">{{ request.user.phone_number|default:'محبوب' }}</div>
+    <!-- واترمارک شماره موبایل — چند موقعیت در صفحه -->
+    <div class="wm-container" aria-hidden="true">
+        <span class="wm wm-1">{{ request.user.phone_number|default:'محبوب' }}</span>
+        <span class="wm wm-2">{{ request.user.phone_number|default:'محبوب' }}</span>
+        <span class="wm wm-3">{{ request.user.phone_number|default:'محبوب' }}</span>
+    </div>
 
     {% if no_content %}
     <div class="reader-page" style="text-align:center;padding:48px 16px;">
@@ -158,6 +187,7 @@
         </button>
     </div>
 </footer>
+<br>
 {% endif %}
 
 {% endblock %}

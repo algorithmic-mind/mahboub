@@ -298,9 +298,10 @@
     </div>
 </div>
 
-<!-- Purchase Bar - اضافه شده مشابه فایل قبلی -->
+<!-- Purchase Bar -->
 <div class="purchase-bar">
     <div class="purchase-content">
+
         <div class="purchase-price">
             {% if book.access_type == 'free' %}
                 <div class="current-price">رایگان</div>
@@ -313,22 +314,41 @@
                 {% endif %}
             {% endif %}
         </div>
+
         <div class="purchase-actions">
-            {% if book.access_type == 'free' %}
-            <button class="btn btn-primary" id="readBookBtn">
-                <i class="fas fa-book-open"></i>
-                مطالعه کتاب
-            </button>
+
+            {% if not user.is_authenticated %}
+                {# ── کاربر لاگین نیست ── #}
+                <a href="{% url 'account:login' %}?next={{ request.path }}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    ورود برای مطالعه
+                </a>
+
+            {% elif book.access_type == 'free' or has_access %}
+                {# ── رایگان یا خریداری‌شده ── #}
+                <a href="{% url 'books:book_reader' book.slug %}" class="btn btn-primary">
+                    <i class="fas fa-book-open"></i>
+                    مطالعه کتاب
+                </a>
+
             {% else %}
-            <button class="btn btn-primary" id="purchaseBtn">
-                <i class="fas fa-shopping-cart"></i>
-                خرید کتاب
-            </button>
-            <button class="btn btn-secondary" id="previewBtn">
-                <i class="fas fa-eye"></i>
-                مطالعه نمونه
-            </button>
+                {# ── پولی و هنوز نخریده ── #}
+                <form method="post" action="{% url 'purchase:start' 'book' book.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        خرید کتاب
+                    </button>
+                </form>
+                {# پیش‌نمایش فقط اگر فصل رایگان دارد #}
+                {% if book.chapters.filter.count > 0 %}
+                <a href="{% url 'books:book_reader' book.slug %}" class="btn btn-secondary">
+                    <i class="fas fa-eye"></i>
+                    مطالعه نمونه
+                </a>
+                {% endif %}
             {% endif %}
+
         </div>
     </div>
 </div>
@@ -337,5 +357,31 @@
 
 {% block extra_js %}
 <script src="{% static 'js/book-detail.js' %}"></script>
+<script>
+/* نشان‌کردن کتاب */
+document.getElementById('bookmarkBtn')?.addEventListener('click', function () {
+    const icon = this.querySelector('i');
+    const isMarked = icon.classList.contains('fas');
+    icon.className = isMarked ? 'far fa-bookmark' : 'fas fa-bookmark';
+    showToast(isMarked ? 'نشان حذف شد' : 'کتاب نشان شد ✓');
+});
 
+/* اشتراک‌گذاری */
+document.getElementById('shareBtn')?.addEventListener('click', function () {
+    if (navigator.share) {
+        navigator.share({ title: '{{ book.title }}', url: window.location.href });
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('لینک کپی شد ✓');
+    }
+});
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card-bg);color:var(--text-primary);padding:10px 20px;border-radius:10px;box-shadow:var(--shadow-xl);font-size:14px;z-index:9999;border:1px solid var(--gray-200);white-space:nowrap;';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+}
+</script>
 {% endblock %}

@@ -131,8 +131,11 @@ def book_detail(request, slug):
 # Book Reader — بر اساس دیتابیس BookPage
 # ─────────────────────────────────────────────────────────────────────────
 
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='/account/login/')
 def book_reader(request, slug):
-    """صفحه خواندن — از دیتابیس BookPage"""
+    """صفحه خواندن — نیاز به لاگین — از دیتابیس BookPage"""
     book = get_object_or_404(Book, slug=slug, is_active=True)
 
     from purchase.models import Purchase
