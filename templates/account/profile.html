@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}پروفایل - محبوب{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/profile.css">
+<script src="https://unpkg.com/htmx.org@2.0.0-beta3/dist/htmx.js"></script>
+{% endblock %}
+
+{% block content %}
+
+
+<!-- Main Content -->
+<main class="app-content">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
+            <button class="avatar-edit" type="button"><i class="fas fa-camera"></i></button>
+        </div>
+        <h2 class="profile-name">{{ user.full_name|default:"کاربر محبوب" }}</h2>
+        <p class="profile-phone" dir="ltr">{{ user.phone_number }}</p>
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">۰</div>
+                <div class="stat-label">کتاب خریداری شده</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-value">۰</div>
+                <div class="stat-label">نشان شده</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-value">۰</div>
+                <div class="stat-label">دوره‌ها</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title"><i class="fas fa-bolt"></i> دسترسی سریع</div>
+    <div class="quick-actions-grid">
+        <a href="#" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)"><i class="fas fa-book-open"></i></div>
+            <span>کتاب‌های من</span>
+        </a>
+        <a href="#" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)"><i class="fas fa-bookmark"></i></div>
+            <span>نشان شده‌ها</span>
+        </a>
+        <a href="#" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"><i class="fas fa-history"></i></div>
+            <span>تاریخچه</span>
+        </a>
+        <a href="#" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7)"><i class="fas fa-download"></i></div>
+            <span>دانلودها</span>
+        </a>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="section-title"><i class="fas fa-user-cog"></i> تنظیمات حساب کاربری</div>
+    <div class="settings-list">
+        <a href="#" class="setting-item">
+            <div class="setting-icon"><i class="fas fa-user-edit"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">ویرایش پروفایل</div>
+                <div class="setting-desc">نام، ایمیل و تصویر پروفایل</div>
+            </div>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <a href="#" class="setting-item">
+            <div class="setting-icon"><i class="fas fa-bell"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">اعلان‌ها</div>
+                <div class="setting-desc">مدیریت اعلان‌های برنامه</div>
+            </div>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <a href="#" class="setting-item">
+            <div class="setting-icon"><i class="fas fa-credit-card"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">اطلاعات پرداخت</div>
+                <div class="setting-desc">کارت‌ها و روش‌های پرداخت</div>
+            </div>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+    </div>
+
+    <!-- App Settings -->
+    <div class="section-title"><i class="fas fa-cog"></i> تنظیمات برنامه</div>
+    <div class="settings-list">
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-moon"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">حالت تاریک</div>
+                <div class="setting-desc">فعال/غیرفعال کردن تم تاریک</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Support -->
+    <div class="section-title"><i class="fas fa-question-circle"></i> راهنما و پشتیبانی</div>
+    <div class="settings-list">
+        <a href="#" class="setting-item">
+            <div class="setting-icon"><i class="fas fa-headset"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">تماس با پشتیبانی</div>
+                <div class="setting-desc">ارتباط با تیم پشتیبانی</div>
+            </div>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <a href="#" class="setting-item">
+            <div class="setting-icon"><i class="fas fa-info-circle"></i></div>
+            <div class="setting-content">
+                <div class="setting-title">درباره محبوب</div>
+                <div class="setting-desc">نسخه ۱.۰.۰</div>
+            </div>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+    </div>
+
+    <!-- Logout -->
+    <button class="logout-btn"
+            hx-post="/logout/"
+            hx-confirm="آیا مطمئن هستید که می‌خواهید خارج شوید؟"
+            hx-target="body"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            id="logoutBtn"
+            type="button">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>خروج از حساب کاربری</span>
+    </button>
+</main>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="bottom-nav-content">
+        <a href="/" class="nav-item"><i class="fas fa-home"></i><span>خانه</span></a>
+        <a href="/books/" class="nav-item"><i class="fas fa-book"></i><span>کتاب‌ها</span></a>
+        <a href="/courses/" class="nav-item"><i class="fas fa-video"></i><span>نگاره</span></a>
+        <a href="/podcasts/" class="nav-item"><i class="fas fa-microphone"></i><span>صوت</span></a>
+        <a href="/profile/" class="nav-item active"><i class="fas fa-user"></i><span>پروفایل</span></a>
+    </div>
+</nav>
+
+<script>
+// Drawer
+const menuToggle = document.getElementById('menuToggle');
+const drawerMenu = document.getElementById('drawerMenu');
+const drawerBackdrop = document.getElementById('drawerBackdrop');
+const drawerClose = document.getElementById('drawerClose');
+
+function openDrawer() { drawerMenu.classList.add('active'); drawerBackdrop.classList.add('active'); document.body.style.overflow='hidden'; }
+function closeDrawer() { drawerMenu.classList.remove('active'); drawerBackdrop.classList.remove('active'); document.body.style.overflow=''; }
+
+menuToggle?.addEventListener('click', openDrawer);
+drawerBackdrop?.addEventListener('click', closeDrawer);
+drawerClose?.addEventListener('click', closeDrawer);
+
+// Dark mode toggle
+const darkToggle = document.getElementById('darkModeToggle');
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function applyTheme(dark) {
+    if (dark) { document.documentElement.setAttribute('data-theme','dark'); themeIcon.className='fas fa-sun'; }
+    else { document.documentElement.removeAttribute('data-theme'); themeIcon.className='fas fa-moon'; }
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    if (darkToggle) darkToggle.checked = dark;
+}
+
+// Init theme
+const saved = localStorage.getItem('theme');
+applyTheme(saved === 'dark');
+
+darkToggle?.addEventListener('change', e => applyTheme(e.target.checked));
+themeToggle?.addEventListener('click', () => applyTheme(!isDark()));
+</script>
+{% endblock %}

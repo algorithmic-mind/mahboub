@@ -1,0 +1,72 @@
+<div class="login-form">
+    <div class="form-header">
+        <h2 class="form-title">ورود | ثبت‌نام</h2>
+        <p class="form-description">برای ادامه، شماره موبایل خود را وارد کنید</p>
+    </div>
+
+    <div class="form-body">
+        <form hx-post="/send-code/"
+              hx-target="#login-form-wrapper"
+              hx-swap="innerHTML"
+              hx-indicator="#send-spinner"
+              hx-disabled-elt="#sendCodeBtn">
+
+            {% csrf_token %}
+
+            <div class="input-group">
+                <label for="mobileInput" class="input-label">
+                    <i class="fas fa-mobile-alt"></i>
+                    شماره موبایل
+                </label>
+                <div class="mobile-input-wrapper">
+                    <input
+                        dir="ltr"
+                        type="tel"
+                        id="mobileInput"
+                        name="phone"
+                        class="mobile-input"
+                        maxlength="10"
+                        pattern="9[0-9]{9}"
+                        inputmode="numeric"
+                        placeholder="9123456789"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,''); toggleSendBtn(this.value)"
+                        autocomplete="tel"
+                        autofocus
+                    >
+                    <span class="country-code">98+</span>
+                </div>
+                <div class="input-hint">شماره موبایل باید با ۹ شروع شود</div>
+                <div id="phone-error" class="input-error" style="display:none"></div>
+            </div>
+
+            <button class="btn btn-primary btn-large" id="sendCodeBtn" type="submit" disabled>
+                <span>دریافت کد تایید</span>
+                <i class="fas fa-arrow-left" id="send-icon"></i>
+                <i class="fas fa-spinner fa-spin htmx-indicator" id="send-spinner" style="display:none"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="form-footer">
+        <p class="terms-text">
+            با ورود و ثبت‌نام،
+            <a href="#" class="terms-link" onclick="openTerms(event)">شرایط و قوانین</a>
+            استفاده از محبوب را می‌پذیرید.
+        </p>
+    </div>
+</div>
+
+<script>
+function toggleSendBtn(val) {
+    const btn = document.getElementById('sendCodeBtn');
+    btn.disabled = !/^9[0-9]{9}$/.test(val);
+}
+
+// نمایش spinner هنگام ارسال
+document.body.addEventListener('htmx:beforeRequest', function(e) {
+    if (e.detail.elt.closest('form')) {
+        document.getElementById('send-icon')?.style.setProperty('display', 'none');
+        document.getElementById('send-spinner')?.style.setProperty('display', 'inline-block');
+    }
+});
+</script>

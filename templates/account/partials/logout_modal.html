@@ -1,0 +1,22 @@
+<div class="modal-overlay" id="logoutModal" onclick="closeModal(event, 'logoutModal')">
+    <div class="modal-box">
+        <div class="modal-icon modal-icon--danger">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <h3 class="modal-title">خروج از حساب</h3>
+        <p class="modal-desc">آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید؟</p>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModalById('logoutModal')">
+                انصراف
+            </button>
+            <button class="btn btn-danger"
+                    hx-post="{% url 'logout' %}"
+                    hx-target="body"
+                    hx-indicator="#logout-spinner">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>بله، خروج</span>
+                <i class="fas fa-spinner fa-spin htmx-indicator" id="logout-spinner"></i>
+            </button>
+        </div>
+    </div>
+</div>

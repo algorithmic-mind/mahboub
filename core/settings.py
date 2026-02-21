@@ -176,3 +176,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # USER AUTH MODEL
 AUTH_USER_MODEL = 'account.User'
+
+# SMS.ir Configuration
+SMSIR_API_KEY = '8Ca4PBnyrDH6t9mQapjjB8eFsU8z6iBxEg0ExI33uaJl6hnlfyvePAKzSwd7XDkt'
+SMSIR_TEMPLATE_ID = 830439  # شناسه قالب OTP در sms.ir
+
+# OTP Settings
+OTP_EXPIRY_MINUTES = 2
+OTP_LENGTH = 5
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/profile/'

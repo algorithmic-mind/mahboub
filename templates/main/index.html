@@ -47,6 +47,39 @@
         </button>
     </div>
 
+    <!-- AI Welcome Popup -->
+    <div class="ai-welcome-modal" id="aiWelcomeModal" style="display: {% block ai_welcome_display %}{% endblock %};">
+        <div class="ai-welcome-backdrop" id="aiWelcomeBackdrop"></div>
+        <div class="ai-welcome-content">
+            <button class="ai-welcome-close" id="aiWelcomeClose">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="ai-welcome-image">
+                <img src="{% static 'imgs/ai-popup.png' %}" alt="AI Assistant" />
+            </div>
+            
+            <div class="ai-welcome-body">
+                <h2 class="ai-welcome-title">
+                    هوش مصنوعی محبوب
+                </h2>
+                <p class="ai-welcome-description">
+                    دستیار هوشمند شما برای پاسخ به سوالات دینی، تفسیر قرآن و مسائل شرعی
+                </p>
+                
+                <div class="ai-welcome-actions">
+                    <a href="" class="btn-ai-start">
+                        <i class="fas fa-comments"></i>
+                        شروع گفتگو
+                    </a>
+                    <button class="btn-ai-later" id="aiWelcomeLater" style="font-family: 'Vazirmatn';">
+                        بعداً
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Categories Section - 8 items (matching old.html) -->
     <div class="section-title">دسترسی سریع</div>
     <div class="categories-grid">

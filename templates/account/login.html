@@ -1,0 +1,75 @@
+{% extends "account/base.html" %}
+{% block title %}ورود به محبوب{% endblock %}
+{% block body_class %}login-body{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/login.css">{% endblock %}
+
+{% block content %}
+<div class="login-container">
+
+    <!-- فرم ورود -->
+    <div id="login-form-wrapper">
+        {% include "account/partials/login_form.html" %}
+    </div>
+
+    <!-- ویژگی‌ها -->
+    <div class="login-features">
+        <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>دسترسی به هزاران کتاب مذهبی</span>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>امکان دانلود و مطالعه آفلاین</span>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-check-circle"></i>
+            <span>همگام‌سازی در تمام دستگاه‌ها</span>
+        </div>
+    </div>
+
+    <a href="/" class="back-to-home">
+        <i class="fas fa-arrow-right"></i>
+        بازگشت به صفحه اصلی محبوب
+    </a>
+</div>
+
+<!-- Terms Modal -->
+<div class="terms-modal" id="termsModal">
+    <div class="terms-modal-backdrop" onclick="closeTerms()"></div>
+    <div class="terms-modal-content">
+        <div class="terms-modal-header">
+            <h3 class="terms-modal-title">
+                <i class="fas fa-file-contract"></i>
+                شرایط و قوانین استفاده
+            </h3>
+            <button class="terms-modal-close" onclick="closeTerms()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="terms-modal-body">
+            <div class="terms-section"><h4>۱. پذیرش شرایط</h4><p>با استفاده از اپلیکیشن محبوب، شما شرایط و قوانین زیر را می‌پذیرید.</p></div>
+            <div class="terms-section"><h4>۲. حریم خصوصی</h4><p>محبوب متعهد به حفظ حریم خصوصی کاربران است. اطلاعات شخصی شما به هیچ شخص ثالثی منتقل نمی‌شود.</p></div>
+            <div class="terms-section"><h4>۳. استفاده صحیح</h4><p>کاربران موظف به استفاده مناسب و قانونی از محتوا هستند. هرگونه کپی‌برداری غیرمجاز ممنوع است.</p></div>
+            <div class="terms-section"><h4>۴. تغییرات در شرایط</h4><p>محبوب حق دارد این شرایط را در هر زمان تغییر دهد.</p></div>
+        </div>
+        <div class="terms-modal-footer">
+            <button class="btn btn-primary btn-large" onclick="closeTerms()">
+                <span>متوجه شدم</span>
+                <i class="fas fa-check"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openTerms(e) {
+    e.preventDefault();
+    document.getElementById('termsModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeTerms() {
+    document.getElementById('termsModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+</script>
+{% endblock %}
